@@ -1,0 +1,26 @@
+# Example
+# let:
+#   fizzOrBuzz:
+#     lambda: [num]
+#     do:
+#       let:
+#         remainder: [%, $: num, 2]
+#       in:
+#         if: [==, $: remainder, 2]
+#         then: Fizz
+#         else: Bazz
+# in: [List.map, $: fizzOrBuzz]
+
+let:
+  x: true
+  y:
+    lambda: [ boolVal ]
+    do:
+      if: {$: x}
+      then:
+        if: {$: boolVal}
+        then: yes
+        else: no
+      else: no
+in:
+  $: y
