@@ -2,12 +2,11 @@ use yamlfun::Expr;
 use yamlfun::Vm;
 
 const SUM: &str = "
-():
-  - lambda: [a, b]
-    do:
-      +: [a, b]
-  - $: 10
-  - $: 20
+- lambda: [a, b]
+  do:
+    +: [a, b]
+- $: 10
+- $: 20
 ";
 
 fn main() {

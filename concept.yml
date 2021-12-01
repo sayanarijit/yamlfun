@@ -10,4 +10,4 @@ let:
         else: {$: no}
       else: {$: no}
 in:
-  (): [y, $: true]
+  [y, $: true]

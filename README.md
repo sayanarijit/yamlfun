@@ -1,4 +1,4 @@
-# (): [YAML, fun]
+# [YAML, fun]
 
 Just an experimental project implementing embedded functional scripting language based on YAML syntax.
 
@@ -19,7 +19,7 @@ let:
         else: {$: no}
       else: {$: no}
 in:
-  (): [y, $: true]
+  [y, $: true]
 ```
 
 Result:
@@ -53,7 +53,7 @@ do:
 ### Function Calls
 
 ```yaml
-(): [func, arg1, arg2]
+[func, arg1, arg2]
 ```
 
 ### If Else

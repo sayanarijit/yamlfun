@@ -10,10 +10,10 @@ type Env = HashMap<String, Expr>;
 #[serde(deny_unknown_fields)]
 pub enum Expr {
     Value(Value),
+    Call(Vec<Expr>),
     Lambda(Box<Lambda>),
     IfElse(Box<IfElse>),
     LetIn(Box<LetIn>),
-    Call(Call),
     Add(Add),
     Eq_(Eq_),
     Yaml(Val),
@@ -100,8 +100,8 @@ impl Expr {
                 res
             }
 
-            Self::Call(c) => {
-                if let Some((func, args)) = c.args.split_first() {
+            Self::Call(call) => {
+                if let Some((func, args)) = call.split_first() {
                     if let Some(Value::Function(f)) = func.clone().eval(env) {
                         f.to_owned().call(args.clone().to_owned())
                     } else {
