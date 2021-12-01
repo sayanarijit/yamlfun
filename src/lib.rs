@@ -1,160 +1,149 @@
-use serde::{Deserialize, Serialize};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde_yaml::Value as Yaml;
 use std::collections::HashMap;
+use std::fmt;
 
 type Env = HashMap<String, Expr>;
-
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-#[serde(deny_unknown_fields)]
-pub struct Add {
-    #[serde(rename = "+")]
-    args: Vec<Expr>,
-}
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(untagged)]
 #[serde(deny_unknown_fields)]
 pub enum Expr {
-    Null,
-    Bool(bool),
-    Str(String),
-    Var(Var),
-    Number(i64),
-    Float(f64),
+    Value(Value),
     Lambda(Box<Lambda>),
-    LetIn(Box<LetIn>),
     IfElse(Box<IfElse>),
+    LetIn(Box<LetIn>),
+    Call(Call),
+    Add(Add),
+    Eq_(Eq_),
+    Yaml(Val),
+    Var(String),
 }
 
-// impl fmt::Display for Expr {
-//     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-//         match self {
-//             Expr::Null => f.write_str("Null"),
-//             Expr::Bool(v) => v.fmt(f),
-//             Expr::Str(v) => {
-//                 write!(f, "{:?}", v)
-//             }
-//             Expr::Number(v) => v.fmt(f),
-//             Expr::Float(v) => v.fmt(f),
-//             Expr::Var(v) => v.name.fmt(f),
-//             Expr::Lambda(v) => {
-//                 write!(f, "\\{:?} -> {}", &v.lambda, v.do_)?;
-//                 Ok(())
-//             }
-//             Expr::LetIn(_) => todo!(),
-//             Expr::IfElse(_) => todo!(),
-//             Expr::Eval(_) => todo!(),
-//         }
-//     }
-// }
+impl From<Add> for Expr {
+    fn from(v: Add) -> Self {
+        Self::Add(v)
+    }
+}
+
+impl From<Yaml> for Expr {
+    fn from(v: Yaml) -> Self {
+        Self::Yaml(Val::new(v))
+    }
+}
+
+impl From<Val> for Expr {
+    fn from(v: Val) -> Self {
+        Self::Yaml(v)
+    }
+}
+
+impl From<Box<LetIn>> for Expr {
+    fn from(v: Box<LetIn>) -> Self {
+        Self::LetIn(v)
+    }
+}
+
+impl From<Box<IfElse>> for Expr {
+    fn from(v: Box<IfElse>) -> Self {
+        Self::IfElse(v)
+    }
+}
+
+impl From<Box<Lambda>> for Expr {
+    fn from(v: Box<Lambda>) -> Self {
+        Self::Lambda(v)
+    }
+}
+
+impl From<Value> for Expr {
+    fn from(v: Value) -> Self {
+        Self::Value(v)
+    }
+}
 
 impl Expr {
-    pub fn call<I>(self, args: I) -> Option<Self>
-    where
-        I: IntoIterator<Item = Expr>,
-    {
+    pub fn eval(self, env: Env) -> Option<Value> {
         match self {
-            Self::Lambda(l) => l.as_caller().call(args),
-            _ => None,
-        }
-    }
-
-    pub fn sum(&self, other: &Self) -> Option<Self> {
-        match (self, other) {
-            (Self::Number(n1), Self::Number(n2)) => Some(Self::Number(n1 + n2)),
-            (Self::Float(n1), Self::Float(n2)) => Some(Self::Float(n1 + n2)),
-            (Self::Str(n1), Self::Str(n2)) => Some(Self::Str(format!("{}{}", n1, n2))),
-            (_, _) => None,
-        }
-    }
-
-    pub fn eval(mut self, env: &mut HashMap<String, Self>) -> Option<Self> {
-        match self {
-            Self::Null | Self::Bool(_) | Self::Number(_) | Self::Float(_) | Self::Str(_) => {
-                Some(self)
+            Self::Yaml(v) => Some(Value::Yaml(v.yaml)),
+            Self::Value(v) => Some(v),
+            Self::Lambda(l) => {
+                let func = Function {
+                    args: l.lambda,
+                    env,
+                    expr: l.do_,
+                };
+                Some(Value::Function(Box::new(func)))
             }
-
-            Self::Lambda(ref mut l) => {
-                for (k, v) in env {
-                    if !l.env.contains_key(k) {
-                        l.env.insert(k.into(), v.clone());
-                    }
-                }
-                Some(self)
-            }
-
-            Self::Var(s) => env.get(&s.name).cloned().and_then(|v| v.eval(env)),
-
-            Self::IfElse(cond) => match cond.if_.eval(env) {
-                Some(Self::Bool(v)) => {
-                    if v {
-                        cond.then.eval(env)
-                    } else {
-                        cond.else_.eval(env)
-                    }
-                }
-                _ => None,
+            Self::Var(name) => match env.get(&name).cloned() {
+                Some(Expr::Value(v)) => Some(v),
+                Some(e) => e.eval(env),
+                None => None,
             },
 
-            Self::LetIn(letin) => {
-                let mut past = HashMap::new();
-                for (k, v) in &letin.let_ {
-                    if let Some(v) = env.get(k) {
-                        past.insert(k, v.clone());
-                    }
+            Self::IfElse(cond) => {
+                let res = cond.if_.eval(env.clone());
+                match res {
+                    Some(Value::Yaml(Yaml::Bool(true))) => cond.then.eval(env),
+                    Some(Value::Yaml(Yaml::Bool(false))) => cond.else_.eval(env),
+                    _ => None,
+                }
+            }
 
+            Self::LetIn(letin) => {
+                let mut env = env.clone();
+                for (k, v) in &letin.let_ {
                     let val = v.clone();
                     env.insert(k.into(), val);
                 }
-
                 let res = letin.in_.eval(env);
-
-                for k in letin.let_.keys() {
-                    env.remove(k);
-                }
-
-                for (k, v) in past {
-                    env.insert(k.into(), v);
-                }
                 res
             }
-        }
-    }
-}
 
-#[derive(Debug, Clone)]
-pub struct Caller {
-    args: Vec<String>,
-    do_: Expr,
-    env: Env,
-}
-
-impl Caller {
-    fn call<I>(mut self, args: I) -> Option<Expr>
-    where
-        I: IntoIterator<Item = Expr>,
-    {
-        let mut args = args.into_iter();
-        if let Some((name, rest)) = self.args.split_first() {
-            if let Some(arg) = args.next() {
-                if rest.is_empty() {
-                    self.env.insert(name.to_string(), arg);
-                    let letin = LetIn::new(self.env, self.do_);
-                    Some(Expr::LetIn(Box::new(letin)))
+            Self::Call(c) => {
+                if let Some((func, args)) = c.args.split_first() {
+                    if let Some(Value::Function(f)) = func.clone().eval(env) {
+                        f.to_owned().call(args.clone().to_owned())
+                    } else {
+                        None
+                    }
                 } else {
-                    self.env.insert(name.to_string(), arg);
-                    let lambda = Lambda::new(self.env.clone(), rest.to_vec(), self.do_);
-                    Some(Expr::Lambda(Box::new(lambda)))
+                    None
                 }
-            } else {
-                let lambda = Lambda::new(self.env, self.args, self.do_);
-                Some(Expr::Lambda(Box::new(lambda)))
             }
-        } else {
-            if let Some(_) = args.next() {
-                None
-            } else {
-                let letin = LetIn::new(self.env, self.do_);
-                Some(Expr::LetIn(Box::new(letin)))
+
+            Self::Add(s) => {
+                let mut sum = Some(Value::Yaml(Yaml::Number(0.into())));
+                for arg in s.args {
+                    match (sum, arg.eval(env.clone())) {
+                        (
+                            Some(Value::Yaml(Yaml::Number(n1))),
+                            Some(Value::Yaml(Yaml::Number(n2))),
+                        ) => {
+                            sum = Some(Value::Yaml(Yaml::Number(
+                                (n1.as_i64().unwrap() + n2.as_i64().unwrap()).into(),
+                            )));
+                            // TODO: Handle all cases
+                        }
+                        (_, _) => sum = None, // Error
+                    }
+                }
+                sum
+            }
+
+            Self::Eq_(e) => {
+                if e.args.len() != 2 {
+                    None
+                } else {
+                    let arg1 = e.args[0].clone().eval(env.clone());
+                    let arg2 = e.args[1].clone().eval(env);
+                    match (arg1, arg2) {
+                        (Some(Value::Yaml(y1)), Some(Value::Yaml(y2))) => {
+                            Some(Yaml::Bool(y1 == y2).into())
+                        }
+                        _ => Some(Yaml::Bool(false).into()),
+                    }
+                }
             }
         }
     }
@@ -167,21 +156,87 @@ pub struct Lambda {
 
     #[serde(rename = "do")]
     do_: Expr,
-
-    #[serde(default)]
-    env: Env,
 }
 
-impl Lambda {
-    pub fn new(env: Env, lambda: Vec<String>, do_: Expr) -> Self {
-        Self { lambda, do_, env }
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub enum Value {
+    Yaml(Yaml),
+    Function(Box<Function>),
+}
+
+impl fmt::Display for Value {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Value::Yaml(y) => write!(f, "{:?}", y),
+            Value::Function(fun) => write!(f, "<lambda: {}>", fun.args.join(" ")),
+        }
+    }
+}
+
+impl From<Yaml> for Value {
+    fn from(y: Yaml) -> Self {
+        Self::Yaml(y)
+    }
+}
+
+impl From<Function> for Value {
+    fn from(f: Function) -> Self {
+        Self::Function(Box::new(f))
+    }
+}
+
+impl Value {
+    pub fn call<I>(self: Self, args: I) -> Option<Value>
+    where
+        I: IntoIterator<Item = Expr>,
+    {
+        match self {
+            Value::Function(f) => f.call(args),
+            _ => None,
+        }
     }
 
-    pub fn as_caller(self) -> Caller {
-        Caller {
-            args: self.lambda,
-            do_: self.do_,
-            env: self.env,
+    pub fn parse<T>(self: Self) -> Option<T>
+    where
+        T: DeserializeOwned,
+    {
+        if let Self::Yaml(y) = self {
+            serde_yaml::from_value(y).ok()
+        } else {
+            None
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct Function {
+    args: Vec<String>,
+    env: Env,
+    expr: Expr,
+}
+
+impl Function {
+    pub fn call<I>(mut self, args: I) -> Option<Value>
+    where
+        I: IntoIterator<Item = Expr>,
+    {
+        let mut args = args.into_iter();
+        if let Some((name, rest)) = self.args.split_first() {
+            if let Some(arg) = args.next() {
+                self.env.insert(name.into(), arg);
+                self.args = rest.to_vec();
+                self.call(args)
+            } else {
+                Some(Value::Function(Box::new(self)))
+            }
+        } else {
+            if args.count() == 0 {
+                self.expr.eval(self.env)
+            } else {
+                None // TODO: Error
+            }
         }
     }
 }
@@ -196,12 +251,6 @@ pub struct LetIn {
     in_: Expr,
 }
 
-impl LetIn {
-    pub fn new(let_: Env, in_: Expr) -> Self {
-        Self { let_, in_ }
-    }
-}
-
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct IfElse {
@@ -214,23 +263,38 @@ pub struct IfElse {
     else_: Expr,
 }
 
-impl IfElse {
-    pub fn new(if_: Expr, then: Expr, else_: Expr) -> Self {
-        Self { if_, then, else_ }
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct Val {
+    #[serde(rename = "$")]
+    yaml: Yaml,
+}
+
+impl Val {
+    pub fn new(yaml: Yaml) -> Self {
+        Self { yaml }
     }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(deny_unknown_fields)]
-pub struct Var {
-    #[serde(rename = "$")]
-    name: String,
+pub struct Call {
+    #[serde(rename = "()")]
+    args: Vec<Expr>,
 }
 
-impl Var {
-    pub fn new(name: String) -> Self {
-        Self { name }
-    }
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct Add {
+    #[serde(rename = "+")]
+    args: Vec<Expr>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct Eq_ {
+    #[serde(rename = "==")]
+    args: Vec<Expr>,
 }
 
 #[derive(Debug, Clone)]
@@ -254,14 +318,7 @@ impl Vm {
         self
     }
 
-    pub fn eval(&mut self, expr: Expr) -> Option<Expr> {
-        expr.eval(&mut self.env)
-    }
-
-    pub fn call<I>(&mut self, expr: Expr, args: I) -> Option<Expr>
-    where
-        I: IntoIterator<Item = Expr>,
-    {
-        expr.call(args).unwrap().eval(&mut self.env)
+    pub fn eval(&self, expr: Expr) -> Option<Value> {
+        expr.eval(self.env.clone())
     }
 }

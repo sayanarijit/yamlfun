@@ -1,17 +1,22 @@
 use yamlfun::Expr;
 use yamlfun::Vm;
 
-const ADD: &str = "+: [1, 2]";
-const ADD_ONE: &str = "+: [1]";
+const ZERO: &str = "+: []";
+const ONE: &str = "+: [$: 1]";
+const THREE: &str = "+: [$: 1, $: 2]";
 
 fn main() {
-    let mut vm = Vm::new();
+    let vm = Vm::new();
 
-    let add: Expr = serde_yaml::from_str(ADD.trim()).unwrap();
-    println!("{:?}", &add);
-    println!("{:?}", vm.eval(add).unwrap());
+    let zero: Expr = serde_yaml::from_str(ZERO.trim()).unwrap();
+    let zero: usize = vm.eval(zero).unwrap().parse().unwrap();
+    println!("{}", zero);
 
-    let add_one: Expr = serde_yaml::from_str(ADD_ONE.trim()).unwrap();
-    println!("{:?}", &add_one);
-    println!("{:?}", vm.call(add_one, [Expr::Number(4)]).unwrap());
+    let one: Expr = serde_yaml::from_str(ONE.trim()).unwrap();
+    let one: usize = vm.eval(one).unwrap().parse().unwrap();
+    println!("{}", one);
+
+    let three: Expr = serde_yaml::from_str(THREE.trim()).unwrap();
+    let three: usize = vm.eval(three).unwrap().parse().unwrap();
+    println!("{}", three);
 }

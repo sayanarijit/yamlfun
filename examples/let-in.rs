@@ -3,39 +3,38 @@ use yamlfun::Vm;
 
 const LET_IN: &str = "
 let:
-  a: foo
-  b:
-    $: a
+  a: {$: foo}
+  b: a
 in:
-  $: b
+  b
 ";
 
 const OVERRIDE: &str = "
 let:
-  a: foo
+  a: {$: foo}
   b:
     let:
-      a: bar
+      a: {$: bar}
     in:
-      $: a
+      a
 in:
-  $: b
+  b
 ";
 
 const RESTORE: &str = "
 let:
-  a: foo
+  a: {$: foo}
   b:
     let:
-      a: bar
+      a: {$: bar}
     in:
-      $: a
+      a
 in:
-  $: a
+  a
 ";
 
 fn main() {
-    let mut vm = Vm::new();
+    let vm = Vm::new();
 
     let let_in: Expr = serde_yaml::from_str(LET_IN.trim()).unwrap();
     println!("{:?}", &let_in);

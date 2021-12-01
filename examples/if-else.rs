@@ -2,31 +2,33 @@ use yamlfun::Expr;
 use yamlfun::Vm;
 
 const YES: &str = "
-if: true
-then: yes
-else: no
+if:
+  ==: [$: 2, $: 2]
+then: {$: yes}
+else: {$: no}
 ";
 
 const NO: &str = r"
-if: false
-then: yes
-else: no
+if:
+  ==: [$: 1, $: 2]
+then: {$: yes}
+else: {$: no}
 ";
 
 const NESTED: &str = r"
 if:
-  if: true
-  then: true
-  else: false
+  if: {$: true}
+  then: {$: true}
+  else: {$: false}
 then:
-  if: true
-  then: nested
-  else: not nested
-else: not nested at all
+  if: {$: true}
+  then: {$: nested}
+  else: {$: not nested}
+else: {$: not nested at all}
 ";
 
 fn main() {
-    let mut vm = Vm::new();
+    let vm = Vm::new();
 
     let yes: Expr = serde_yaml::from_str(YES.trim()).unwrap();
     println!("{:?}", vm.eval(yes).unwrap());

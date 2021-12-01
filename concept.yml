@@ -1,26 +1,13 @@
-# Example
-# let:
-#   fizzOrBuzz:
-#     lambda: [num]
-#     do:
-#       let:
-#         remainder: [%, $: num, 2]
-#       in:
-#         if: [==, $: remainder, 2]
-#         then: Fizz
-#         else: Bazz
-# in: [List.map, $: fizzOrBuzz]
-
 let:
-  x: true
+  x: {$: true}
   y:
-    lambda: [ boolVal ]
+    lambda: [boolVal]
     do:
-      if: {$: x}
+      if: x
       then:
-        if: {$: boolVal}
-        then: yes
-        else: no
-      else: no
+        if: boolVal
+        then: {$: yes}
+        else: {$: no}
+      else: {$: no}
 in:
-  $: y
+  (): [y, $: true]

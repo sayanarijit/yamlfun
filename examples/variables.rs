@@ -1,14 +1,14 @@
+use serde_yaml::Value as Yaml;
 use yamlfun::Expr;
-use yamlfun::Var;
 use yamlfun::Vm;
 
-const A: &str = "$: a";
-const B: &str = "$: b";
+const A: &str = "a";
+const B: &str = "b";
 
 fn main() {
-    let mut vm = Vm::new().with_env([
-        ("a".into(), Expr::Str("foo".into())),
-        ("b".into(), Expr::Var(Var::new("a".into()))),
+    let vm = Vm::new().with_env([
+        ("a".into(), Yaml::String("foo".into()).into()),
+        ("b".into(), Expr::Var("a".into())),
     ]);
 
     let a: Expr = serde_yaml::from_str(A.trim()).unwrap();
