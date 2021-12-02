@@ -14,7 +14,7 @@ pub enum Expr {
     Lambda(Box<Lambda>),
     IfElse(Box<IfElse>),
     LetIn(Box<LetIn>),
-    Add(Add),
+    Sum(Sum),
     Equals(Equals),
     Constant(Constant),
     Variable(String),
@@ -29,9 +29,9 @@ impl Default for Expr {
     }
 }
 
-impl From<Add> for Expr {
-    fn from(v: Add) -> Self {
-        Self::Add(v)
+impl From<Sum> for Expr {
+    fn from(v: Sum) -> Self {
+        Self::Sum(v)
     }
 }
 
@@ -159,7 +159,7 @@ impl Expr {
                 }
             }
 
-            Self::Add(s) => {
+            Self::Sum(s) => {
                 let mut sum = Some(Value::Number(0.into()));
                 for arg in s.args {
                     match (sum, arg.eval(env.clone())) {
@@ -425,7 +425,7 @@ pub struct Call {
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(deny_unknown_fields)]
-pub struct Add {
+pub struct Sum {
     #[serde(rename = "+")]
     args: Vec<Expr>,
 }
