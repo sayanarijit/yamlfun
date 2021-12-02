@@ -449,13 +449,6 @@ pub struct IfElse {
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(deny_unknown_fields)]
-pub struct Call {
-    #[serde(rename = "()")]
-    args: Vec<Expr>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-#[serde(deny_unknown_fields)]
 pub struct Sum {
     #[serde(rename = "+")]
     args: Vec<Expr>,
