@@ -22,6 +22,7 @@ pub enum Expr {
     Variable(String),
     List(List),
     Record(Record),
+    With(Box<With>),
     Get(Get),
     Value(#[serde(skip)] Value),
 }
@@ -208,6 +209,32 @@ impl Expr {
                 }
             }
 
+            Self::With(w) => {
+                let mut env = env.clone();
+                for name in w.with {
+                    match env.get(&name).cloned() {
+                        Some(Self::Record(r)) => {
+                            for (k, v) in r.items {
+                                env.insert(k, v);
+                            }
+                        }
+
+                        Some(Self::Constant(Constant { yaml })) => match yaml {
+                            Yaml::Mapping(m) => {
+                                for (k, v) in m {
+                                    if let Yaml::String(s) = k {
+                                        env.insert(s, Self::Constant(v.into()));
+                                    }
+                                }
+                            }
+                            _ => {}
+                        },
+                        _ => {}
+                    }
+                }
+                w.do_.eval(env)
+            }
+
             Self::Get(g) => {
                 if let Some((expr, fields)) = g.args.split_first() {
                     env.get(expr)
@@ -243,6 +270,15 @@ impl Expr {
 #[serde(deny_unknown_fields)]
 pub struct Lambda {
     lambda: Vec<String>,
+
+    #[serde(rename = "do")]
+    do_: Expr,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
+#[serde(deny_unknown_fields)]
+pub struct With {
+    with: Vec<String>,
 
     #[serde(rename = "do")]
     do_: Expr,

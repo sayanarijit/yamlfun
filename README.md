@@ -64,15 +64,15 @@ foo:
       rec:
         b:
           rec:
-            c: {$: 1}
-        d: {$: foo}
-    e: {$: {y: z}}
+            c: { $: 1 }
+        d: { $: foo }
+    e: { $: { y: z } }
 ```
 
 ### Record Field Access
 
 ```yaml
-{.: [foo, a, b, c]}
+{ .: [foo, a, b, c] }
 ```
 
 ```yaml
@@ -108,6 +108,23 @@ let:
   a: { $: foo }
   b: a
 in: b
+```
+
+### With
+
+```yaml
+let:
+  args1:
+    rec:
+      first: { $: 10 }
+      second: { $: 20 }
+  args2:
+    $:
+      third: 30
+in:
+  with: [args1, args2]
+  do:
+    +: [first, second, third]
 ```
 
 ## Embed into Rust
