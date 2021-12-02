@@ -20,7 +20,7 @@ pub enum Expr {
     Variable(String),
     List(List),
     Record(Record),
-    Value(Value),
+    Value(#[serde(skip)] Value),
 }
 
 impl Default for Expr {
@@ -200,7 +200,7 @@ pub struct Lambda {
     do_: Expr,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 #[serde(deny_unknown_fields)]
 pub struct Record {
     #[serde(rename = "rec")]
@@ -218,7 +218,7 @@ where
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 #[serde(deny_unknown_fields)]
 pub struct List {
     #[serde(rename = "list")]
@@ -236,18 +236,22 @@ where
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-#[serde(deny_unknown_fields)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Value {
     Null,
     Bool(bool),
     Number(Number),
     String(String),
-    List(#[serde(skip)] Vec<Value>),
-    Record(#[serde(skip)] HashMap<String, Value>),
-    Function(#[serde(skip)] Box<Function>),
+    List(Vec<Value>),
+    Record(HashMap<String, Value>),
+    Function(Box<Function>),
 }
 
+impl Default for Value {
+    fn default() -> Self {
+        Self::Null
+    }
+}
 impl From<HashMap<String, Value>> for Value {
     fn from(v: HashMap<String, Value>) -> Self {
         Self::Record(v)
