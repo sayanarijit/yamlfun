@@ -1,4 +1,5 @@
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
+use serde_yaml::Number;
 use serde_yaml::Value as Yaml;
 use std::collections::HashMap;
 use std::fmt;
@@ -9,15 +10,23 @@ type Env = HashMap<String, Expr>;
 #[serde(untagged)]
 #[serde(deny_unknown_fields)]
 pub enum Expr {
-    Value(Value),
     Call(Vec<Expr>),
     Lambda(Box<Lambda>),
     IfElse(Box<IfElse>),
     LetIn(Box<LetIn>),
     Add(Add),
-    Eq_(Eq_),
-    Yaml(Val),
-    Var(String),
+    Equals(Equals),
+    Constant(Constant),
+    Variable(String),
+    List(List),
+    Record(Record),
+    Value(Value),
+}
+
+impl Default for Expr {
+    fn default() -> Self {
+        Self::Value(Value::Null)
+    }
 }
 
 impl From<Add> for Expr {
@@ -26,16 +35,35 @@ impl From<Add> for Expr {
     }
 }
 
-impl From<Yaml> for Expr {
-    fn from(v: Yaml) -> Self {
-        Self::Yaml(Val::new(v))
+impl From<Equals> for Expr {
+    fn from(v: Equals) -> Self {
+        Self::Equals(v)
     }
 }
 
-impl From<Val> for Expr {
-    fn from(v: Val) -> Self {
-        Self::Yaml(v)
+impl From<Constant> for Expr {
+    fn from(v: Constant) -> Self {
+        Self::Constant(v)
     }
+}
+
+impl From<String> for Expr {
+    fn from(v: String) -> Self {
+        Self::Variable(v)
+    }
+}
+
+impl From<Value> for Expr {
+    fn from(v: Value) -> Self {
+        Self::Value(v)
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct Constant {
+    #[serde(rename = "$")]
+    yaml: Yaml,
 }
 
 impl From<Box<LetIn>> for Expr {
@@ -56,17 +84,35 @@ impl From<Box<Lambda>> for Expr {
     }
 }
 
-impl From<Value> for Expr {
-    fn from(v: Value) -> Self {
-        Self::Value(v)
-    }
-}
-
 impl Expr {
     pub fn eval(self, env: Env) -> Option<Value> {
         match self {
-            Self::Yaml(v) => Some(Value::Yaml(v.yaml)),
             Self::Value(v) => Some(v),
+            Self::Constant(y) => Some(y.yaml.into()),
+            Self::List(l) => {
+                let mut items = vec![];
+                for i in l.items {
+                    if let Some(val) = i.eval(env.clone()) {
+                        items.push(val);
+                    } else {
+                        return None;
+                    }
+                }
+                Some(Value::List(items))
+            }
+
+            Self::Record(r) => {
+                let mut items = HashMap::new();
+                for (k, v) in r.items {
+                    if let Some(val) = v.eval(env.clone()) {
+                        items.insert(k, val);
+                    } else {
+                        return None;
+                    }
+                }
+                Some(Value::Record(items))
+            }
+
             Self::Lambda(l) => {
                 let func = Function {
                     args: l.lambda,
@@ -75,7 +121,8 @@ impl Expr {
                 };
                 Some(Value::Function(Box::new(func)))
             }
-            Self::Var(name) => match env.get(&name).cloned() {
+
+            Self::Variable(name) => match env.get(&name).cloned() {
                 Some(Expr::Value(v)) => Some(v),
                 Some(e) => e.eval(env),
                 None => None,
@@ -84,8 +131,8 @@ impl Expr {
             Self::IfElse(cond) => {
                 let res = cond.if_.eval(env.clone());
                 match res {
-                    Some(Value::Yaml(Yaml::Bool(true))) => cond.then.eval(env),
-                    Some(Value::Yaml(Yaml::Bool(false))) => cond.else_.eval(env),
+                    Some(Value::Bool(true)) => cond.then.eval(env),
+                    Some(Value::Bool(false)) => cond.else_.eval(env),
                     _ => None,
                 }
             }
@@ -113,16 +160,13 @@ impl Expr {
             }
 
             Self::Add(s) => {
-                let mut sum = Some(Value::Yaml(Yaml::Number(0.into())));
+                let mut sum = Some(Value::Number(0.into()));
                 for arg in s.args {
                     match (sum, arg.eval(env.clone())) {
-                        (
-                            Some(Value::Yaml(Yaml::Number(n1))),
-                            Some(Value::Yaml(Yaml::Number(n2))),
-                        ) => {
-                            sum = Some(Value::Yaml(Yaml::Number(
+                        (Some(Value::Number(n1)), Some(Value::Number(n2))) => {
+                            sum = Some(Value::Number(
                                 (n1.as_i64().unwrap() + n2.as_i64().unwrap()).into(),
-                            )));
+                            ));
                             // TODO: Handle all cases
                         }
                         (_, _) => sum = None, // Error
@@ -131,16 +175,14 @@ impl Expr {
                 sum
             }
 
-            Self::Eq_(e) => {
+            Self::Equals(e) => {
                 if e.args.len() != 2 {
                     None
                 } else {
                     let arg1 = e.args[0].clone().eval(env.clone());
                     let arg2 = e.args[1].clone().eval(env);
                     match (arg1, arg2) {
-                        (Some(Value::Yaml(y1)), Some(Value::Yaml(y2))) => {
-                            Some(Yaml::Bool(y1 == y2).into())
-                        }
+                        (Some(v1), Some(v2)) => Some(Yaml::Bool(v1 == v2).into()),
                         _ => Some(Yaml::Bool(false).into()),
                     }
                 }
@@ -160,23 +202,145 @@ pub struct Lambda {
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(deny_unknown_fields)]
+pub struct Record {
+    #[serde(rename = "rec")]
+    items: HashMap<String, Expr>,
+}
+
+impl<I> From<I> for Record
+where
+    I: IntoIterator<Item = (String, Expr)>,
+{
+    fn from(items: I) -> Self {
+        Self {
+            items: items.into_iter().collect(),
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct List {
+    #[serde(rename = "list")]
+    items: Vec<Expr>,
+}
+
+impl<I> From<I> for List
+where
+    I: IntoIterator<Item = Expr>,
+{
+    fn from(items: I) -> Self {
+        Self {
+            items: items.into_iter().collect(),
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub enum Value {
-    Yaml(Yaml),
-    Function(Box<Function>),
+    Null,
+    Bool(bool),
+    Number(Number),
+    String(String),
+    List(#[serde(skip)] Vec<Value>),
+    Record(#[serde(skip)] HashMap<String, Value>),
+    Function(#[serde(skip)] Box<Function>),
+}
+
+impl From<HashMap<String, Value>> for Value {
+    fn from(v: HashMap<String, Value>) -> Self {
+        Self::Record(v)
+    }
+}
+
+impl From<Vec<Value>> for Value {
+    fn from(v: Vec<Value>) -> Self {
+        Self::List(v)
+    }
+}
+
+impl From<Box<Function>> for Value {
+    fn from(v: Box<Function>) -> Self {
+        Self::Function(v)
+    }
+}
+
+impl From<String> for Value {
+    fn from(v: String) -> Self {
+        Self::String(v)
+    }
+}
+
+impl From<Number> for Value {
+    fn from(v: Number) -> Self {
+        Self::Number(v)
+    }
+}
+
+impl From<bool> for Value {
+    fn from(v: bool) -> Self {
+        Self::Bool(v)
+    }
 }
 
 impl fmt::Display for Value {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Value::Yaml(y) => write!(f, "{:?}", y),
-            Value::Function(fun) => write!(f, "<lambda: {}>", fun.args.join(" ")),
+            Value::Null => write!(f, "Null"),
+            Value::Function(fun) => write!(f, "ƒ({})", fun.args.join(", ")),
+            Value::Bool(b) => b.fmt(f),
+            Value::Number(n) => n.fmt(f),
+            Value::String(s) => write!(f, "{:?}", s),
+            Value::List(l) => {
+                let len = l.len();
+                write!(f, "[")?;
+                for (i, e) in l.iter().enumerate() {
+                    write!(f, "{}", e)?;
+                    if i + 1 != len {
+                        write!(f, ", ")?;
+                    }
+                }
+                write!(f, "]")
+            }
+            Value::Record(r) => {
+                let len = r.len();
+                write!(f, "{{")?;
+                for (i, (k, v)) in r.iter().enumerate() {
+                    write!(f, "{}: {}", k, v)?;
+                    if i + 1 != len {
+                        write!(f, ", ")?;
+                    }
+                }
+                write!(f, "}}")
+            }
         }
     }
 }
 
 impl From<Yaml> for Value {
     fn from(y: Yaml) -> Self {
-        Self::Yaml(y)
+        match y {
+            Yaml::Null => Self::Null,
+            Yaml::Bool(bool) => Self::Bool(bool),
+            Yaml::Number(n) => Self::Number(n),
+            Yaml::String(s) => Self::String(s),
+            Yaml::Sequence(s) => Self::List(
+                s.into_iter()
+                    .map(Value::from)
+                    .collect::<Vec<Value>>()
+                    .into(),
+            ),
+            Yaml::Mapping(m) => Self::Record(
+                m.into_iter()
+                    .filter_map(|(k, v)| match k {
+                        Yaml::String(s) => Some((s, v.into())),
+                        _ => None,
+                    })
+                    .collect::<HashMap<String, Value>>()
+                    .into(),
+            ),
+        }
     }
 }
 
@@ -196,20 +360,9 @@ impl Value {
             _ => None,
         }
     }
-
-    pub fn parse<T>(self: Self) -> Option<T>
-    where
-        T: DeserializeOwned,
-    {
-        if let Self::Yaml(y) = self {
-            serde_yaml::from_value(y).ok()
-        } else {
-            None
-        }
-    }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 #[serde(deny_unknown_fields)]
 pub struct Function {
     args: Vec<String>,
@@ -265,19 +418,6 @@ pub struct IfElse {
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(deny_unknown_fields)]
-pub struct Val {
-    #[serde(rename = "$")]
-    yaml: Yaml,
-}
-
-impl Val {
-    pub fn new(yaml: Yaml) -> Self {
-        Self { yaml }
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-#[serde(deny_unknown_fields)]
 pub struct Call {
     #[serde(rename = "()")]
     args: Vec<Expr>,
@@ -292,7 +432,7 @@ pub struct Add {
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(deny_unknown_fields)]
-pub struct Eq_ {
+pub struct Equals {
     #[serde(rename = "==")]
     args: Vec<Expr>,
 }

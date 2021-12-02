@@ -31,11 +31,11 @@ fn main() {
     let vm = Vm::new();
 
     let yes: Expr = serde_yaml::from_str(YES.trim()).unwrap();
-    println!("{:?}", vm.eval(yes).unwrap());
+    println!("{}", vm.eval(yes).unwrap());
 
     let no: Expr = serde_yaml::from_str(NO.trim()).unwrap();
-    println!("{:?}", vm.eval(no).unwrap());
+    println!("{}", vm.eval(no).unwrap());
 
     let nested: Expr = serde_yaml::from_str(NESTED.trim()).unwrap();
-    println!("{:?}", vm.eval(nested).unwrap());
+    println!("{}", vm.eval(nested).unwrap());
 }

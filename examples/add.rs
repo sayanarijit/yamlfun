@@ -9,14 +9,14 @@ fn main() {
     let vm = Vm::new();
 
     let zero: Expr = serde_yaml::from_str(ZERO.trim()).unwrap();
-    let zero: usize = vm.eval(zero).unwrap().parse().unwrap();
+    let zero = vm.eval(zero).unwrap();
     println!("{}", zero);
 
     let one: Expr = serde_yaml::from_str(ONE.trim()).unwrap();
-    let one: usize = vm.eval(one).unwrap().parse().unwrap();
+    let one = vm.eval(one).unwrap();
     println!("{}", one);
 
     let three: Expr = serde_yaml::from_str(THREE.trim()).unwrap();
-    let three: usize = vm.eval(three).unwrap().parse().unwrap();
+    let three = vm.eval(three).unwrap();
     println!("{}", three);
 }

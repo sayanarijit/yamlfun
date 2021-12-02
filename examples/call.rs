@@ -13,7 +13,6 @@ fn main() {
     let vm = Vm::new();
 
     let sum: Expr = serde_yaml::from_str(SUM.trim()).unwrap();
-    println!("{:?}", &sum);
-    let sum: usize = vm.eval(sum).unwrap().parse().unwrap();
-    println!("{:?}", sum);
+    let sum = vm.eval(sum).unwrap();
+    println!("{}", sum);
 }

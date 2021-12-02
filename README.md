@@ -8,41 +8,40 @@ Code:
 
 ```yaml
 let:
-  x: {$: true}
+  x: { $: true }
   y:
     lambda: [boolVal]
     do:
       if: x
       then:
         if: boolVal
-        then: {$: yes}
-        else: {$: no}
-      else: {$: no}
-in:
-  [y, $: true]
+        then: { $: yes }
+        else: { $: no }
+      else: { $: no }
+in: [y, $: true]
 ```
 
 Result:
 
 ```
-String("yes")
+"yes"
 ```
 
 ## Things that (probably) work
 
-### Constants:
+### Constant
 
 ```yaml
 $: foo
 ```
 
-### Variables:
+### Variable
 
 ```yaml
 foo
 ```
 
-### Functions
+### Function
 
 ```yaml
 lambda: [num1, num2]
@@ -50,10 +49,36 @@ do:
   +: [num1, num2]
 ```
 
-### Function Calls
+### Function Call
 
 ```yaml
 [func, arg1, arg2]
+```
+
+### Record
+
+```yaml
+rec:
+  a:
+    rec:
+      b:
+        rec:
+          c: { $: 1 }
+      d: { $: foo }
+  e: { $: false }
+```
+
+### List
+
+```yaml
+list:
+  - { $: a }
+  - { $: 1 }
+  - { $: 1.1 }
+  - { $: -1 }
+  - { $: true }
+  - list:
+      - { $: nested }
 ```
 
 ### If Else
@@ -61,18 +86,17 @@ do:
 ```yaml
 if:
   ==: [$: 2, $: 2]
-then: {$: yes}
-else: {$: no}
+then: { $: yes }
+else: { $: no }
 ```
 
 ### Let In
 
 ```yaml
 let:
-  a: {$: foo}
+  a: { $: foo }
   b: a
-in:
-  b
+in: b
 ```
 
 ## Embed into Rust

@@ -37,14 +37,11 @@ fn main() {
     let vm = Vm::new();
 
     let let_in: Expr = serde_yaml::from_str(LET_IN.trim()).unwrap();
-    println!("{:?}", &let_in);
-    println!("{:?}", vm.eval(let_in).unwrap());
+    println!("{}", vm.eval(let_in).unwrap());
 
     let override_: Expr = serde_yaml::from_str(OVERRIDE.trim()).unwrap();
-    println!("{:?}", &override_);
-    println!("{:?}", vm.eval(override_).unwrap());
+    println!("{}", vm.eval(override_).unwrap());
 
     let restore: Expr = serde_yaml::from_str(RESTORE.trim()).unwrap();
-    println!("{:?}", &restore);
-    println!("{:?}", vm.eval(restore).unwrap());
+    println!("{}", vm.eval(restore).unwrap());
 }
