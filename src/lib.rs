@@ -22,6 +22,7 @@ pub enum Expr {
     Variable(String),
     List(List),
     Record(Record),
+    Get(Get),
     Value(#[serde(skip)] Value),
 }
 
@@ -66,6 +67,12 @@ impl From<Value> for Expr {
 pub struct Constant {
     #[serde(rename = "$")]
     yaml: Yaml,
+}
+
+impl From<Yaml> for Constant {
+    fn from(yaml: Yaml) -> Self {
+        Self { yaml }
+    }
 }
 
 impl From<Box<LetIn>> for Expr {
@@ -124,11 +131,22 @@ impl Expr {
                 Some(Value::Function(Box::new(func)))
             }
 
-            Self::Variable(name) => match env.get(&name).cloned() {
-                Some(Expr::Value(v)) => Some(v),
-                Some(e) => e.eval(env),
-                None => None,
-            },
+            Self::Variable(name) => {
+                if let Some((first, rest)) = name.split_once('.') {
+                    env.get(first)
+                        .and_then(|e| {
+                            e.clone()
+                                .get(&rest.split('.').map(str::to_string).collect::<Vec<String>>())
+                        })
+                        .and_then(|e| e.eval(env))
+                } else {
+                    match env.get(&name).cloned() {
+                        Some(Expr::Value(v)) => Some(v),
+                        Some(e) => e.eval(env),
+                        None => None,
+                    }
+                }
+            }
 
             Self::IfElse(cond) => {
                 let res = cond.if_.eval(env.clone());
@@ -189,6 +207,34 @@ impl Expr {
                     }
                 }
             }
+
+            Self::Get(g) => {
+                if let Some((expr, fields)) = g.args.split_first() {
+                    env.get(expr)
+                        .cloned()
+                        .and_then(|e| e.get(fields))
+                        .and_then(|e| e.eval(env))
+                } else {
+                    None
+                }
+            }
+        }
+    }
+
+    pub fn get(self, fields: &[String]) -> Option<Expr> {
+        if let Some((first, rest)) = fields.split_first() {
+            match self {
+                Self::Record(r) => r.items.get(first).cloned().and_then(|e| e.get(rest)),
+                Self::Constant(c) => match c.yaml {
+                    Yaml::Mapping(ref m) => m
+                        .get(&Yaml::String(first.to_string()))
+                        .map(|y| Expr::Constant(y.clone().into())),
+                    _ => None,
+                },
+                _ => None,
+            }
+        } else {
+            Some(self.clone())
         }
     }
 }
@@ -200,6 +246,13 @@ pub struct Lambda {
 
     #[serde(rename = "do")]
     do_: Expr,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
+#[serde(deny_unknown_fields)]
+pub struct Get {
+    #[serde(rename = ".")]
+    args: Vec<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
