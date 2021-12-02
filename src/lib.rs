@@ -95,7 +95,7 @@ impl From<Box<Lambda>> for Expr {
 }
 
 impl Expr {
-    pub fn eval(self, env: Env) -> Option<Value> {
+    pub fn eval(self, mut env: Env) -> Option<Value> {
         match self {
             Self::Value(v) => Some(v),
             Self::Constant(y) => Some(y.yaml.into()),
@@ -159,7 +159,6 @@ impl Expr {
             }
 
             Self::LetIn(letin) => {
-                let mut env = env.clone();
                 for (k, v) in &letin.let_ {
                     let val = v.clone();
                     env.insert(k.into(), val);
@@ -210,7 +209,6 @@ impl Expr {
             }
 
             Self::With(w) => {
-                let mut env = env.clone();
                 for name in w.with {
                     match env.get(&name).cloned() {
                         Some(Self::Record(r)) => {

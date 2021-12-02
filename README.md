@@ -58,21 +58,20 @@ do:
 ### Record
 
 ```yaml
-foo:
-  rec:
-    a:
-      rec:
-        b:
-          rec:
-            c: { $: 1 }
-        d: { $: foo }
-    e: { $: { y: z } }
+rec:
+  a:
+    rec:
+      b:
+        rec:
+          c: { $: 1 }
+      d: { $: foo }
+  e: { $: { y: z } }
 ```
 
 ### Record Field Access
 
 ```yaml
-{ .: [foo, a, b, c] }
+.: [foo, a, b, c]
 ```
 
 ```yaml
