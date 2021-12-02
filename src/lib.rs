@@ -1,4 +1,6 @@
-use serde::{Deserialize, Serialize};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde_yaml::from_value;
+use serde_yaml::Mapping;
 use serde_yaml::Number;
 use serde_yaml::Value as Yaml;
 use std::collections::HashMap;
@@ -363,6 +365,31 @@ impl Value {
             Value::Function(f) => f.call(args),
             _ => None,
         }
+    }
+
+    pub fn to_value(self: Self) -> Option<Yaml> {
+        match self {
+            Self::Null => Some(Yaml::Null),
+            Self::Bool(b) => Some(Yaml::Bool(b)),
+            Value::Number(n) => Some(Yaml::Number(n)),
+            Value::String(s) => Some(Yaml::String(s)),
+            Value::List(l) => Some(Yaml::Sequence(
+                l.into_iter().filter_map(Value::to_value).collect(),
+            )),
+            Value::Record(r) => Some(Yaml::Mapping(
+                r.into_iter()
+                    .filter_map(|(k, v)| v.to_value().map(|val| (Yaml::String(k), val)))
+                    .collect::<Mapping>(),
+            )),
+            Value::Function(_) => None,
+        }
+    }
+
+    pub fn parse<T>(self: Self) -> Option<T>
+    where
+        T: DeserializeOwned,
+    {
+        self.to_value().and_then(|v| from_value(v).ok())
     }
 }
 
