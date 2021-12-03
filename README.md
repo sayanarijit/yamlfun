@@ -61,21 +61,23 @@ do:
 rec:
   a:
     rec:
-      b:
-        rec:
-          c: { $: 1 }
-      d: { $: foo }
+      b: { $: { 1: bar, true: baz } }
+      "10": {$: foo}
   e: { $: { y: z } }
 ```
 
 ### Record Field Access
 
 ```yaml
-.: [foo, a, b, c]
+foo.a.10
 ```
 
 ```yaml
-foo.a.b.c
+foo.a.b.(1)
+```
+
+```yaml
+.: [foo, { $: a }, { $: b }, { $: 1 }]
 ```
 
 ### List

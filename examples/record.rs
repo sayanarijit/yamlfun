@@ -7,16 +7,17 @@ let:
     rec:
       a:
         rec:
-          b:
-            rec:
-              c: {$: 1}
-          d: {$: foo}
+          b: {$: {1: bar, true: baz}}
+          "10": {$: foo}
       e: {$: {y: z}}
 in:
   rec:
-    c: {.: [foo, a, b, c]}
+    one:
+      .: [foo, {$: a}, {$: b}, {$: 1}]
+    (1): foo.a.b.(1)
+    (true): foo.a.b.(true)
     y: foo.e.y
-    d: foo.a.d
+    "10": foo.a.10
 "#;
 
 fn main() {

@@ -234,11 +234,23 @@ impl Expr {
             }
 
             Self::Get(g) => {
-                if let Some((expr, fields)) = g.args.split_first() {
-                    env.get(expr)
-                        .cloned()
-                        .and_then(|e| e.get(fields))
-                        .and_then(|e| e.eval(env))
+                if let Some((target, fields)) = g.args.split_first() {
+                    let mut val = target.clone().eval(env.clone());
+                    for field in fields {
+                        let field = field.clone().eval(env.clone());
+                        match (val, field) {
+                            (Some(Value::Record(r)), Some(v)) => {
+                                val = v
+                                    .to_yaml()
+                                    .and_then(|y| r.get(to_key(&y).as_str()))
+                                    .cloned();
+                            }
+                            _ => {
+                                return None;
+                            }
+                        }
+                    }
+                    val
                 } else {
                     None
                 }
@@ -252,8 +264,8 @@ impl Expr {
                 Self::Record(r) => r.items.get(first).cloned().and_then(|e| e.get(rest)),
                 Self::Constant(c) => match c.yaml {
                     Yaml::Mapping(ref m) => m
-                        .get(&Yaml::String(first.to_string()))
-                        .map(|y| Expr::Constant(y.clone().into())),
+                        .get(&from_key(first))
+                        .and_then(|v| Self::Constant(v.clone().into()).get(rest)),
                     _ => None,
                 },
                 _ => None,
@@ -286,7 +298,7 @@ pub struct With {
 #[serde(deny_unknown_fields)]
 pub struct Get {
     #[serde(rename = ".")]
-    args: Vec<String>,
+    args: Vec<Expr>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
@@ -411,6 +423,33 @@ impl fmt::Display for Value {
     }
 }
 
+fn to_key(y: &Yaml) -> String {
+    match y {
+        Yaml::Null => "(null)".into(),
+        Yaml::String(s) => {
+            if s.starts_with('(') && s.ends_with(')') {
+                format!("({})", s)
+            } else {
+                s.into()
+            }
+        }
+        Yaml::Bool(b) => format!("({})", b),
+        Yaml::Number(n) => format!("({})", n),
+        Yaml::Sequence(s) => format!("({:?})", s),
+        Yaml::Mapping(m) => format!("({:?})", m),
+    }
+}
+
+fn from_key(key: &str) -> Yaml {
+    if key.starts_with("((") && key.ends_with("))") {
+        from_key(key.strip_prefix("((").unwrap().strip_suffix("))").unwrap())
+    } else if key.starts_with('(') && key.ends_with(')') {
+        serde_yaml::from_str(key.strip_prefix('(').unwrap().strip_suffix(')').unwrap()).unwrap()
+    } else {
+        Yaml::String(key.into())
+    }
+}
+
 impl From<Yaml> for Value {
     fn from(y: Yaml) -> Self {
         match y {
@@ -426,10 +465,7 @@ impl From<Yaml> for Value {
             ),
             Yaml::Mapping(m) => Self::Record(
                 m.into_iter()
-                    .filter_map(|(k, v)| match k {
-                        Yaml::String(s) => Some((s, v.into())),
-                        _ => None,
-                    })
+                    .map(|(k, v)| (to_key(&k), v.into()))
                     .collect::<HashMap<String, Value>>()
                     .into(),
             ),
@@ -454,18 +490,18 @@ impl Value {
         }
     }
 
-    pub fn to_value(self: Self) -> Option<Yaml> {
+    pub fn to_yaml(self: Self) -> Option<Yaml> {
         match self {
             Self::Null => Some(Yaml::Null),
             Self::Bool(b) => Some(Yaml::Bool(b)),
             Value::Number(n) => Some(Yaml::Number(n)),
             Value::String(s) => Some(Yaml::String(s)),
             Value::List(l) => Some(Yaml::Sequence(
-                l.into_iter().filter_map(Value::to_value).collect(),
+                l.into_iter().filter_map(Value::to_yaml).collect(),
             )),
             Value::Record(r) => Some(Yaml::Mapping(
                 r.into_iter()
-                    .filter_map(|(k, v)| v.to_value().map(|val| (Yaml::String(k), val)))
+                    .filter_map(|(k, v)| v.to_yaml().map(|val| (Yaml::String(k), val)))
                     .collect::<Mapping>(),
             )),
             Value::Function(_) => None,
@@ -476,7 +512,7 @@ impl Value {
     where
         T: DeserializeOwned,
     {
-        self.to_value().and_then(|v| from_value(v).ok())
+        self.to_yaml().and_then(|v| from_value(v).ok())
     }
 }
 
