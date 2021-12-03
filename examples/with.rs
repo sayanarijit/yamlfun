@@ -5,10 +5,10 @@ const WITH: &str = r#"
 let:
   args1:
     rec:
-      first: {$: 10}
-      second: {$: 20}
+      first: {:: 10}
+      second: {:: 20}
   args2:
-    $:
+    ::
       third: 30
 in:
   with: [args1, args2]

@@ -5,8 +5,8 @@ const SUM: &str = "
 - lambda: [a, b]
   do:
     +: [a, b]
-- $: 10
-- $: 20
+- :: 10
+- :: 20
 ";
 
 fn main() {

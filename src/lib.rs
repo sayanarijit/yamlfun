@@ -66,7 +66,7 @@ impl From<Value> for Expr {
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct Constant {
-    #[serde(rename = "$")]
+    #[serde(rename = ":")]
     yaml: Yaml,
 }
 

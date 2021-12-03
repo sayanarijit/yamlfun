@@ -3,7 +3,7 @@ use yamlfun::Vm;
 
 const LET_IN: &str = "
 let:
-  a: {$: foo}
+  a: {:: foo}
   b: a
 in:
   b
@@ -11,10 +11,10 @@ in:
 
 const OVERRIDE: &str = "
 let:
-  a: {$: foo}
+  a: {:: foo}
   b:
     let:
-      a: {$: bar}
+      a: {:: bar}
     in:
       a
 in:
@@ -23,10 +23,10 @@ in:
 
 const RESTORE: &str = "
 let:
-  a: {$: foo}
+  a: {:: foo}
   b:
     let:
-      a: {$: bar}
+      a: {:: bar}
     in:
       a
 in:

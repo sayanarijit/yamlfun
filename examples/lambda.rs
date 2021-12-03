@@ -4,14 +4,14 @@ use yamlfun::Vm;
 
 const ONE: &str = r#"
 lambda: []
-do: {$: 1}
+do: {:: 1}
 "#;
 
 const TWO: &str = r#"
 lambda: []
 do:
   lambda: []
-  do: {$: 2}
+  do: {:: 2}
 "#;
 
 const SUM: &str = r#"

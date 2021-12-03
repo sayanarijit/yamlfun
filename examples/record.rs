@@ -7,13 +7,13 @@ let:
     rec:
       a:
         rec:
-          b: {$: {1: bar, true: baz}}
-          "10": {$: foo}
-      e: {$: {y: z}}
+          b: {:: {1: bar, true: baz}}
+          "10": {:: foo}
+      e: {:: {y: z}}
 in:
   rec:
     one:
-      .: [foo, {$: a}, {$: b}, {$: 1}]
+      .: [foo, {:: a}, {:: b}, {:: 1}]
     (1): foo.a.b.(1)
     (true): foo.a.b.(true)
     y: foo.e.y

@@ -3,13 +3,13 @@ use yamlfun::Vm;
 
 const LIST: &str = r#"
 list:
-  - {$: a}
-  - {$: 1}
-  - {$: 1.1}
-  - {$: -1}
-  - {$: true}
+  - {:: a}
+  - {:: 1}
+  - {:: 1.1}
+  - {:: -1}
+  - {:: true}
   - list:
-      - {$: nested}
+      - {:: nested}
 "#;
 
 fn main() {

@@ -1,10 +1,10 @@
 use yamlfun::Expr;
 use yamlfun::Vm;
 
-const ONE: &str = "$: 1";
-const FOO: &str = "$: foo";
-const BAR: &str = "$: {foo: bar, 1: true}";
-const BAZ: &str = "$: [baz, 1, true, {a: b}]";
+const ONE: &str = ":: 1";
+const FOO: &str = ":: foo";
+const BAR: &str = ":: {foo: bar, 1: true}";
+const BAZ: &str = ":: [baz, 1, true, {a: b}]";
 
 fn main() {
     let vm = Vm::new();

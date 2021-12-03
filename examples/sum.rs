@@ -2,8 +2,8 @@ use yamlfun::Expr;
 use yamlfun::Vm;
 
 const ZERO: &str = "+: []";
-const ONE: &str = "+: [$: 1]";
-const THREE: &str = "+: [$: 1, $: 2]";
+const ONE: &str = "+: [:: 1]";
+const THREE: &str = "+: [:: 1, :: 2]";
 
 fn main() {
     let vm = Vm::new();

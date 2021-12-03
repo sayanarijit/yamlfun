@@ -1,13 +1,13 @@
 let:
-  x: {$: true}
+  x: {:: true}
   y:
     lambda: [boolVal]
     do:
       if: x
       then:
         if: boolVal
-        then: {$: yes}
-        else: {$: no}
-      else: {$: no}
+        then: {:: yes}
+        else: {:: no}
+      else: {:: no}
 in:
-  [y, $: true]
+  [y, :: true]
