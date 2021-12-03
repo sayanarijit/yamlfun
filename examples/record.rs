@@ -26,4 +26,7 @@ fn main() {
     let rec: Expr = serde_yaml::from_str(REC.trim()).unwrap();
     let rec = vm.eval(rec).unwrap();
     println!("{}", &rec);
+
+    let rec = serde_yaml::to_string(&rec).unwrap();
+    println!("{}", &rec);
 }

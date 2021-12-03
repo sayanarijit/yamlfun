@@ -1,4 +1,6 @@
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde::de::DeserializeOwned;
+use serde::ser::{self, SerializeMap, SerializeSeq};
+use serde::{Deserialize, Serialize, Serializer};
 use serde_yaml::from_value;
 use serde_yaml::Mapping;
 use serde_yaml::Number;
@@ -108,7 +110,7 @@ impl Expr {
                         return None;
                     }
                 }
-                Some(Value::List(items))
+                Some(Value::List(items.into()))
             }
 
             Self::Record(r) => {
@@ -120,11 +122,11 @@ impl Expr {
                         return None;
                     }
                 }
-                Some(Value::Record(items))
+                Some(Value::Record(items.into()))
             }
 
             Self::Lambda(l) => {
-                let func = Function {
+                let func = FunctionValue {
                     args: l.lambda,
                     env,
                     expr: l.do_,
@@ -242,7 +244,7 @@ impl Expr {
                             (Some(Value::Record(r)), Some(v)) => {
                                 val = v
                                     .to_yaml()
-                                    .and_then(|y| r.get(to_key(&y).as_str()))
+                                    .and_then(|y| r.0.get(to_key(&y).as_str()))
                                     .cloned();
                             }
                             _ => {
@@ -338,14 +340,44 @@ where
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub struct RecordValue(HashMap<String, Value>);
+
+impl Into<HashMap<String, Value>> for RecordValue {
+    fn into(self) -> HashMap<String, Value> {
+        self.0
+    }
+}
+
+impl From<HashMap<String, Value>> for RecordValue {
+    fn from(m: HashMap<String, Value>) -> Self {
+        Self(m)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ListValue(Vec<Value>);
+
+impl Into<Vec<Value>> for ListValue {
+    fn into(self) -> Vec<Value> {
+        self.0
+    }
+}
+
+impl From<Vec<Value>> for ListValue {
+    fn from(m: Vec<Value>) -> Self {
+        Self(m)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum Value {
     Null,
     Bool(bool),
     Number(Number),
     String(String),
-    List(Vec<Value>),
-    Record(HashMap<String, Value>),
-    Function(Box<Function>),
+    List(ListValue),
+    Record(RecordValue),
+    Function(Box<FunctionValue>),
 }
 
 impl Default for Value {
@@ -355,18 +387,18 @@ impl Default for Value {
 }
 impl From<HashMap<String, Value>> for Value {
     fn from(v: HashMap<String, Value>) -> Self {
-        Self::Record(v)
+        Self::Record(v.into())
     }
 }
 
 impl From<Vec<Value>> for Value {
     fn from(v: Vec<Value>) -> Self {
-        Self::List(v)
+        Self::List(v.into())
     }
 }
 
-impl From<Box<Function>> for Value {
-    fn from(v: Box<Function>) -> Self {
+impl From<Box<FunctionValue>> for Value {
+    fn from(v: Box<FunctionValue>) -> Self {
         Self::Function(v)
     }
 }
@@ -392,15 +424,15 @@ impl From<bool> for Value {
 impl fmt::Display for Value {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Value::Null => write!(f, "Null"),
+            Value::Null => write!(f, "null"),
             Value::Function(fun) => write!(f, "ƒ({})", fun.args.join(", ")),
             Value::Bool(b) => b.fmt(f),
             Value::Number(n) => n.fmt(f),
             Value::String(s) => write!(f, "{:?}", s),
             Value::List(l) => {
-                let len = l.len();
+                let len = l.0.len();
                 write!(f, "[")?;
-                for (i, e) in l.iter().enumerate() {
+                for (i, e) in l.0.iter().enumerate() {
                     write!(f, "{}", e)?;
                     if i + 1 != len {
                         write!(f, ", ")?;
@@ -409,9 +441,9 @@ impl fmt::Display for Value {
                 write!(f, "]")
             }
             Value::Record(r) => {
-                let len = r.len();
+                let len = r.0.len();
                 write!(f, "{{")?;
-                for (i, (k, v)) in r.iter().enumerate() {
+                for (i, (k, v)) in r.0.iter().enumerate() {
                     write!(f, "{}: {}", k, v)?;
                     if i + 1 != len {
                         write!(f, ", ")?;
@@ -473,8 +505,8 @@ impl From<Yaml> for Value {
     }
 }
 
-impl From<Function> for Value {
-    fn from(f: Function) -> Self {
+impl From<FunctionValue> for Value {
+    fn from(f: FunctionValue) -> Self {
         Self::Function(Box::new(f))
     }
 }
@@ -497,10 +529,10 @@ impl Value {
             Value::Number(n) => Some(Yaml::Number(n)),
             Value::String(s) => Some(Yaml::String(s)),
             Value::List(l) => Some(Yaml::Sequence(
-                l.into_iter().filter_map(Value::to_yaml).collect(),
+                l.0.into_iter().filter_map(Value::to_yaml).collect(),
             )),
             Value::Record(r) => Some(Yaml::Mapping(
-                r.into_iter()
+                r.0.into_iter()
                     .filter_map(|(k, v)| v.to_yaml().map(|val| (Yaml::String(k), val)))
                     .collect::<Mapping>(),
             )),
@@ -516,15 +548,67 @@ impl Value {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
-#[serde(deny_unknown_fields)]
-pub struct Function {
+impl Serialize for FunctionValue {
+    fn serialize<S>(&self, _: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        Err(ser::Error::custom("cannot serialize function"))
+    }
+}
+
+impl Serialize for RecordValue {
+    fn serialize<S>(&self, s: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut map = s.serialize_map(Some(self.0.len()))?;
+        for (k, v) in self.0.iter() {
+            let y = from_key(k);
+            map.serialize_entry(&y, v)?;
+        }
+        map.end()
+    }
+}
+
+impl Serialize for ListValue {
+    fn serialize<S>(&self, s: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut seq = s.serialize_seq(Some(self.0.len()))?;
+        for e in self.0.iter() {
+            seq.serialize_element(e)?;
+        }
+        seq.end()
+    }
+}
+
+impl Serialize for Value {
+    fn serialize<S>(&self, s: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            Value::Null => s.serialize_unit(),
+            Value::Bool(v) => s.serialize_bool(*v),
+            Value::Number(v) => v.serialize(s),
+            Value::String(v) => s.serialize_str(v),
+            Value::List(v) => v.serialize(s),
+            Value::Record(v) => v.serialize(s),
+            Value::Function(v) => v.serialize(s),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct FunctionValue {
     args: Vec<String>,
     env: Env,
     expr: Expr,
 }
 
-impl Function {
+impl FunctionValue {
     pub fn call<I>(mut self, args: I) -> Option<Value>
     where
         I: IntoIterator<Item = Expr>,
