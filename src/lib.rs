@@ -369,7 +369,8 @@ impl From<Vec<Value>> for ListValue {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[serde(from = "Yaml")]
 pub enum Value {
     Null,
     Bool(bool),
