@@ -112,7 +112,7 @@ do:
 
 ### Chaining
 
-```
+```yaml
 let:
   (+):
     lambda: [x, y]
