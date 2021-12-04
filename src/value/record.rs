@@ -1,30 +1,30 @@
 use crate::{yaml, yaml::Value as Yaml, Value};
 use crate::{Error, Result};
+use indexmap::{map, IndexMap};
 use serde::ser::{Serialize, SerializeMap, Serializer};
-use std::collections::HashMap;
 use std::ops::Deref;
 use std::result;
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Record(HashMap<String, Value>);
+pub struct Record(IndexMap<String, Value>);
 
 impl Deref for Record {
-    type Target = HashMap<String, Value>;
+    type Target = IndexMap<String, Value>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl From<HashMap<String, Value>> for Record {
-    fn from(m: HashMap<String, Value>) -> Self {
+impl From<IndexMap<String, Value>> for Record {
+    fn from(m: IndexMap<String, Value>) -> Self {
         Self(m)
     }
 }
 
 impl IntoIterator for Record {
     type Item = (String, Value);
-    type IntoIter = std::collections::hash_map::IntoIter<String, Value>;
+    type IntoIter = map::IntoIter<String, Value>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.0.into_iter()

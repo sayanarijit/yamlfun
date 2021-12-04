@@ -3,9 +3,9 @@ use crate::yaml::Value as Yaml;
 use crate::{Error, Result};
 use serde::ser::{Serialize, Serializer};
 use serde::Deserialize;
-use std::collections::HashMap;
 use std::fmt;
 use std::result;
+use indexmap::IndexMap;
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(from = "Yaml")]
@@ -43,8 +43,8 @@ impl Default for Value {
     }
 }
 
-impl From<HashMap<String, Value>> for Value {
-    fn from(v: HashMap<String, Value>) -> Self {
+impl From<IndexMap<String, Value>> for Value {
+    fn from(v: IndexMap<String, Value>) -> Self {
         Self::Record(v.into())
     }
 }
@@ -146,7 +146,7 @@ impl From<Yaml> for Value {
             Yaml::Mapping(m) => Self::Record(
                 m.into_iter()
                     .map(|(k, v)| (Record::ser_field_name(&k), v.into()))
-                    .collect::<HashMap<String, Value>>()
+                    .collect::<IndexMap<String, Value>>()
                     .into(),
             ),
         }

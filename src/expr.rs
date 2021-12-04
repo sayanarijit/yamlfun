@@ -3,7 +3,7 @@ use crate::value::{Function, Record as RecordVal};
 use crate::{yaml, Env, Value, Yaml};
 use crate::{Error, Result};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use indexmap::IndexMap;
 use std::fmt;
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
@@ -90,7 +90,7 @@ impl Expr {
             }
 
             Self::Record(r) => {
-                let mut items = HashMap::new();
+                let mut items = IndexMap::new();
                 for (k, v) in r.items {
                     let val = v.eval(env.clone(), platform)?;
                     items.insert(k, val);
@@ -268,7 +268,7 @@ pub struct PlatformCall {
 #[serde(deny_unknown_fields)]
 pub struct Record {
     #[serde(rename = "rec")]
-    items: HashMap<String, Expr>,
+    items: IndexMap<String, Expr>,
 }
 
 impl Record {

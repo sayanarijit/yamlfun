@@ -8,23 +8,71 @@ Code:
 
 ```yaml
 let:
-  x: { :: true }
-  y:
-    lambda: [boolVal]
+  Maybe:
+    rec:
+      map:
+        lambda: [callback, val]
+        do:
+          if:
+            ==: [val, { :: null }]
+          then: val
+          else: [callback, val]
+
+      withDefault:
+        lambda: [default, val]
+        do:
+          if:
+            ==: [val, { :: null }]
+          then: default
+          else: val
+
+  (+):
+    lambda: [x, y]
     do:
-      if: x
-      then:
-        if: boolVal
-        then: { :: yes }
-        else: { :: no }
-      else: { :: no }
-in: [y, :: true]
+      +: [x, y]
+
+  Pair:
+    rec:
+      cons:
+        lambda: [a, b]
+        do:
+          lambda: [op]
+          do: [op, a, b]
+
+      car:
+        lambda: [cons]
+        do:
+          - cons
+          - lambda: [a, b]
+            do: a
+
+      cdr:
+        lambda: [cons]
+        do:
+          - cons
+          - lambda: [a, b]
+            do: b
+
+  cons: [Pair.cons, { :: 1 }, { :: 2 }]
+
+in:
+  rec:
+    a: [Maybe.map, [(+), { :: 1 }], { :: 5 }]
+    b: [Maybe.map, [(+), { :: 1 }], { :: null }]
+    c: [Maybe.withDefault, { :: 0 }, { :: null }]
+    d:
+      - [Maybe.withDefault, { :: 0 }]
+      - - [Maybe.map, [(+), { :: 1 }]]
+        - - [Maybe.map, [(+), { :: 1 }]]
+          - { :: 10 }
+    e: [Pair.car, cons]
+    f: [Pair.cdr, cons]
 ```
 
 Result:
 
 ```
-"yes"
+{a: 6, b: null, c: 0, d: 12, e: 1, f: 2}
 ```
 
 ## Things that (probably) work
