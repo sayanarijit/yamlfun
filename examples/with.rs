@@ -17,7 +17,7 @@ in:
 "#;
 
 fn main() {
-    let vm = Vm::new();
+    let vm = Vm::default();
 
     let with: Expr = serde_yaml::from_str(WITH.trim()).unwrap();
     let with = vm.eval(with).unwrap();

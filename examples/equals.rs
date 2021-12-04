@@ -7,7 +7,7 @@ const FOO: &str = "==: [:: foo, :: foo]";
 const BAR: &str = "==: [:: foo, :: var]";
 
 fn main() {
-    let vm = Vm::new();
+    let vm = Vm::default();
 
     let yes: Expr = serde_yaml::from_str(YES.trim()).unwrap();
     let yes = vm.eval(yes).unwrap();

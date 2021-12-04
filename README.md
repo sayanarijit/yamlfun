@@ -62,7 +62,7 @@ rec:
   a:
     rec:
       b: { :: { 1: bar, true: baz } }
-      "10": {:: foo}
+      '10': { :: foo }
   e: { :: { y: z } }
 ```
 

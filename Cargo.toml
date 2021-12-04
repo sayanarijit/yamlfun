@@ -10,3 +10,4 @@ publish = false
 anyhow = "1.0.51"
 serde = { version = "1.0.130", features = ["derive"] }
 serde_yaml = "0.8.21"
+thiserror = "1.0.30"

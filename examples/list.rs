@@ -13,7 +13,7 @@ list:
 "#;
 
 fn main() {
-    let vm = Vm::new();
+    let vm = Vm::default();
 
     let rec: Expr = serde_yaml::from_str(LIST.trim()).unwrap();
     println!("{}", vm.eval(rec).unwrap());

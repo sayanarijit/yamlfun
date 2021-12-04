@@ -6,7 +6,7 @@ const A: &str = "a";
 const B: &str = "b";
 
 fn main() {
-    let vm = Vm::new().with_env([
+    let vm = Vm::default().with_env([
         ("a".into(), Value::String("foo".into()).into()),
         ("b".into(), Expr::Variable("a".into())),
     ]);

@@ -34,7 +34,7 @@ in:
 ";
 
 fn main() {
-    let vm = Vm::new();
+    let vm = Vm::default();
 
     let let_in: Expr = serde_yaml::from_str(LET_IN.trim()).unwrap();
     println!("{}", vm.eval(let_in).unwrap());

@@ -21,39 +21,46 @@ do:
 "#;
 
 fn main() {
-    let vm = Vm::new();
+    let vm = Vm::default();
 
     let one: Expr = serde_yaml::from_str(ONE.trim()).unwrap();
     let one = vm.eval(one.clone()).unwrap();
-    let one = one.call([]).unwrap();
+    let one = vm.call(one, []).unwrap();
     println!("{}", &one);
 
     let two: Expr = serde_yaml::from_str(TWO.trim()).unwrap();
     let two = vm.eval(two.clone()).unwrap();
-    let two = two.call([]).unwrap();
-    let two = two.call([]).unwrap();
+    let two = vm.call(two, []).unwrap();
+    let two = vm.call(two, []).unwrap();
     println!("{}", two);
 
     let args: Expr = serde_yaml::from_str(SUM.trim()).unwrap();
     let args = vm.eval(args.clone()).unwrap();
     println!("{}", &args);
 
-    let args = args.call([]).unwrap();
+    let args = vm.call(args, []).unwrap();
     println!("{}", &args);
 
-    let args = args.call([Value::Number(10.into()).into()]).unwrap();
+    let args = vm
+        .call(args, [Value::Number(10.into()).into()])
+        .unwrap();
     println!("{}", &args);
 
-    let args = args.call([Value::Number(30.into()).into()]).unwrap();
+    let args = vm
+        .call(args, [Value::Number(30.into()).into()])
+        .unwrap();
     println!("{}", &args);
 
     let args: Expr = serde_yaml::from_str(SUM.trim()).unwrap();
     let args = vm.eval(args.clone()).unwrap();
-    let args = args
-        .call([
-            Value::Number(1.into()).into(),
-            Value::Number(101.into()).into(),
-        ])
+    let args = vm
+        .call(
+            args,
+            [
+                Value::Number(1.into()).into(),
+                Value::Number(101.into()).into(),
+            ],
+        )
         .unwrap();
     println!("{}", &args);
 }

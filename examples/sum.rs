@@ -6,7 +6,7 @@ const ONE: &str = "+: [:: 1]";
 const THREE: &str = "+: [:: 1, :: 2]";
 
 fn main() {
-    let vm = Vm::new();
+    let vm = Vm::default();
 
     let zero: Expr = serde_yaml::from_str(ZERO.trim()).unwrap();
     let zero = vm.eval(zero).unwrap();

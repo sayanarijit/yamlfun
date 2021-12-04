@@ -28,7 +28,7 @@ else: {:: not nested at all}
 ";
 
 fn main() {
-    let vm = Vm::new();
+    let vm = Vm::default();
 
     let yes: Expr = serde_yaml::from_str(YES.trim()).unwrap();
     println!("{}", vm.eval(yes).unwrap());
