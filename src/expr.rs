@@ -22,7 +22,7 @@ pub enum Expr {
     Record(Record),
     With(Box<With>),
     Get(Get),
-    PlatformCall(PlatformCall),
+    PlatformCall(Box<PlatformCall>),
     Value(#[serde(skip)] Value),
 }
 
@@ -227,10 +227,7 @@ impl Expr {
                     Err(Error::NotEnoughArguments(".".into(), 2, g.args.len()))
                 }
             }
-            Expr::PlatformCall(p) => platform.call(
-                &p.platform,
-                p.args.into_iter().map(|a| a.eval(env.clone(), platform)),
-            ),
+            Expr::PlatformCall(p) => platform.call(&p.platform, p.arg.eval(env, platform)?),
         }
     }
 }
@@ -264,7 +261,7 @@ pub struct Get {
 #[serde(deny_unknown_fields)]
 pub struct PlatformCall {
     platform: String,
-    args: Vec<Expr>,
+    arg: Expr,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]

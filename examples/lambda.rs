@@ -1,6 +1,4 @@
-use yamlfun::Expr;
-use yamlfun::Value;
-use yamlfun::Vm;
+use yamlfun::{yaml, DefaultPlatform, Expr, Value, Vm};
 
 const ONE: &str = r#"
 lambda: []
@@ -21,37 +19,33 @@ do:
 "#;
 
 fn main() {
-    let vm = Vm::default();
+    let vm = Vm::new(DefaultPlatform);
 
-    let one: Expr = serde_yaml::from_str(ONE.trim()).unwrap();
+    let one: Expr = yaml::from_str(ONE.trim()).unwrap();
     let one = vm.eval(one.clone()).unwrap();
     let one = vm.call(one, []).unwrap();
     println!("{}", &one);
 
-    let two: Expr = serde_yaml::from_str(TWO.trim()).unwrap();
+    let two: Expr = yaml::from_str(TWO.trim()).unwrap();
     let two = vm.eval(two.clone()).unwrap();
     let two = vm.call(two, []).unwrap();
     let two = vm.call(two, []).unwrap();
     println!("{}", two);
 
-    let args: Expr = serde_yaml::from_str(SUM.trim()).unwrap();
+    let args: Expr = yaml::from_str(SUM.trim()).unwrap();
     let args = vm.eval(args.clone()).unwrap();
     println!("{}", &args);
 
     let args = vm.call(args, []).unwrap();
     println!("{}", &args);
 
-    let args = vm
-        .call(args, [Value::Number(10.into()).into()])
-        .unwrap();
+    let args = vm.call(args, [Value::Number(10.into()).into()]).unwrap();
     println!("{}", &args);
 
-    let args = vm
-        .call(args, [Value::Number(30.into()).into()])
-        .unwrap();
+    let args = vm.call(args, [Value::Number(30.into()).into()]).unwrap();
     println!("{}", &args);
 
-    let args: Expr = serde_yaml::from_str(SUM.trim()).unwrap();
+    let args: Expr = yaml::from_str(SUM.trim()).unwrap();
     let args = vm.eval(args.clone()).unwrap();
     let args = vm
         .call(

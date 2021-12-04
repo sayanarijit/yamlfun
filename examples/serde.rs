@@ -35,13 +35,13 @@ wtf:
 "#;
 
 fn main() {
-    let val: yamlfun::Value = serde_yaml::from_str(&VAL).unwrap();
+    let val: yamlfun::Value = yamlfun::yaml::from_str(&VAL).unwrap();
     println!("{}", &val);
 
     let val = serde_yaml::to_string(&val).unwrap();
     println!("{}", &val);
 
-    let val: serde_yaml::Value = serde_yaml::from_str(&val).unwrap();
+    let val: serde_yaml::Value = yamlfun::yaml::from_str(&val).unwrap();
     let val = serde_yaml::to_string(&val).unwrap();
     println!("{}", &val);
 }

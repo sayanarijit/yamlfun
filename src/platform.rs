@@ -1,20 +1,16 @@
 use crate::{Error, Result, Value};
 
 pub trait Platform: Sized {
-    fn call<I>(&self, name: &str, args: I) -> Result<Value>
-    where
-        I: IntoIterator<Item = Result<Value>>; // TODO: Error
+    fn call(&self, name: &str, arg: Value) -> Result<Value>;
 }
 
-pub struct NoPlatform;
+#[derive(Default, Debug)]
+pub struct DefaultPlatform;
 
-impl Platform for NoPlatform {
-    fn call<I>(&self, name: &str, _: I) -> Result<Value>
-    where
-        I: IntoIterator<Item = Result<Value>>,
-    {
+impl Platform for DefaultPlatform {
+    fn call(&self, name: &str, _: Value) -> Result<Value> {
         Err(Error::PlatformCallError(format!(
-            "cannot run {} in this platform",
+            "cannot call {} in this platform",
             name
         )))
     }

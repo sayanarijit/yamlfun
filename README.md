@@ -128,6 +128,24 @@ in:
     +: [first, second, third]
 ```
 
+### Platform Call
+
+```yaml
+platform: import
+arg: { :: ./concept.yml }
+```
+
+```rust
+struct MyPlatform(DefaultPlatform);
+
+impl Platform for MyPlatform { ... }
+
+fn main() {
+    let vm = Vm::new(MyPlatform(DefaultPlatform));
+    ...
+}
+```
+
 ## Embed into Rust
 
 [Here's how](/examples)

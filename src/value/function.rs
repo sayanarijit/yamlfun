@@ -7,12 +7,33 @@ use serde::ser::{Error as SerdeError, Serialize, Serializer};
 
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct Function {
-    pub(crate) args: Vec<String>,
     pub(crate) env: Env,
+    pub(crate) args: Vec<String>,
     pub(crate) expr: Expr,
 }
 
 impl Function {
+    pub fn new<I>(args: I, expr: Expr) -> Self
+    where
+        I: IntoIterator<Item = String>,
+    {
+        Self {
+            env: Default::default(),
+            args: args.into_iter().collect(),
+            expr,
+        }
+    }
+
+    pub fn with_env<I>(mut self, env: I) -> Self
+    where
+        I: IntoIterator<Item = (String, Expr)>,
+    {
+        for (k, v) in env {
+            self.env.insert(k, v);
+        }
+        self
+    }
+
     pub fn call<I, P>(mut self, args: I, platform: &P) -> CrateResult<Value>
     where
         I: IntoIterator<Item = CrateResult<Value>>,

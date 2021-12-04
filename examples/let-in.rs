@@ -1,5 +1,4 @@
-use yamlfun::Expr;
-use yamlfun::Vm;
+use yamlfun::{yaml, DefaultPlatform, Expr, Vm};
 
 const LET_IN: &str = "
 let:
@@ -34,14 +33,14 @@ in:
 ";
 
 fn main() {
-    let vm = Vm::default();
+    let vm = Vm::new(DefaultPlatform);
 
-    let let_in: Expr = serde_yaml::from_str(LET_IN.trim()).unwrap();
+    let let_in: Expr = yaml::from_str(LET_IN.trim()).unwrap();
     println!("{}", vm.eval(let_in).unwrap());
 
-    let override_: Expr = serde_yaml::from_str(OVERRIDE.trim()).unwrap();
+    let override_: Expr = yaml::from_str(OVERRIDE.trim()).unwrap();
     println!("{}", vm.eval(override_).unwrap());
 
-    let restore: Expr = serde_yaml::from_str(RESTORE.trim()).unwrap();
+    let restore: Expr = yaml::from_str(RESTORE.trim()).unwrap();
     println!("{}", vm.eval(restore).unwrap());
 }

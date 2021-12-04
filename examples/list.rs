@@ -1,5 +1,4 @@
-use yamlfun::Expr;
-use yamlfun::Vm;
+use yamlfun::{yaml, DefaultPlatform, Expr, Vm};
 
 const LIST: &str = r#"
 list:
@@ -13,8 +12,8 @@ list:
 "#;
 
 fn main() {
-    let vm = Vm::default();
+    let vm = Vm::new(DefaultPlatform);
 
-    let rec: Expr = serde_yaml::from_str(LIST.trim()).unwrap();
+    let rec: Expr = yaml::from_str(LIST.trim()).unwrap();
     println!("{}", vm.eval(rec).unwrap());
 }

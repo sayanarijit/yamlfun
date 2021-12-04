@@ -1,10 +1,10 @@
 use anyhow::Result;
 use std::fs;
 use std::io::{self, Read};
-use yamlfun::{Expr, Vm};
+use yamlfun::{yaml, DefaultPlatform, Expr, Vm};
 
 fn main() -> Result<()> {
-    let vm = Vm::default();
+    let vm = Vm::new(DefaultPlatform);
 
     let code = if let Some(file) = std::env::args().skip(1).next() {
         fs::read_to_string(file)?
@@ -16,7 +16,7 @@ fn main() -> Result<()> {
         code
     };
 
-    let expr: Expr = serde_yaml::from_str(&code)?;
+    let expr: Expr = yaml::from_str(&code)?;
     let res = vm.eval(expr).expect("failed to run");
     println!("{}", res);
     Ok(())

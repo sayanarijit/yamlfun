@@ -45,7 +45,6 @@ pub enum Error {
     //
     #[error("{0}")]
     PlatformCallError(String),
-
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

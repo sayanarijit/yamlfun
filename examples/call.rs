@@ -1,4 +1,4 @@
-use yamlfun::{Expr, Vm};
+use yamlfun::{DefaultPlatform, Expr, Vm, yaml};
 
 const SUM: &str = "
 - lambda: [a, b]
@@ -9,9 +9,9 @@ const SUM: &str = "
 ";
 
 fn main() {
-    let vm = Vm::default();
+    let vm = Vm::new(DefaultPlatform);
 
-    let sum: Expr = serde_yaml::from_str(SUM.trim()).unwrap();
+    let sum: Expr = yaml::from_str(SUM.trim()).unwrap();
     let sum = vm.eval(sum).unwrap();
     println!("{}", sum);
 }

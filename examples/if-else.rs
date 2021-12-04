@@ -1,5 +1,4 @@
-use yamlfun::Expr;
-use yamlfun::Vm;
+use yamlfun::{yaml, Expr, Vm, DefaultPlatform};
 
 const YES: &str = "
 if:
@@ -28,14 +27,14 @@ else: {:: not nested at all}
 ";
 
 fn main() {
-    let vm = Vm::default();
+    let vm = Vm::new(DefaultPlatform);
 
-    let yes: Expr = serde_yaml::from_str(YES.trim()).unwrap();
+    let yes: Expr = yaml::from_str(YES.trim()).unwrap();
     println!("{}", vm.eval(yes).unwrap());
 
-    let no: Expr = serde_yaml::from_str(NO.trim()).unwrap();
+    let no: Expr = yaml::from_str(NO.trim()).unwrap();
     println!("{}", vm.eval(no).unwrap());
 
-    let nested: Expr = serde_yaml::from_str(NESTED.trim()).unwrap();
+    let nested: Expr = yaml::from_str(NESTED.trim()).unwrap();
     println!("{}", vm.eval(nested).unwrap());
 }

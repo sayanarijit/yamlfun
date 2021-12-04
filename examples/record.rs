@@ -1,5 +1,4 @@
-use yamlfun::Expr;
-use yamlfun::Vm;
+use yamlfun::{Expr, Vm, DefaultPlatform, yaml};
 
 const REC: &str = r#"
 let:
@@ -25,9 +24,9 @@ in:
 "#;
 
 fn main() {
-    let vm = Vm::default();
+    let vm = Vm::new(DefaultPlatform);
 
-    let rec: Expr = serde_yaml::from_str(REC.trim()).unwrap();
+    let rec: Expr = yaml::from_str(REC.trim()).unwrap();
     let rec = vm.eval(rec).unwrap();
     println!("{}", &rec);
 }

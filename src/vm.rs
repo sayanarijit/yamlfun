@@ -1,21 +1,22 @@
-use crate::platform::NoPlatform;
-use crate::{Env, Error, Expr, Platform, Result, Value};
+use crate::platform::Platform;
+use crate::{Env, Error, Expr, Result, Value};
 
 pub struct Vm<P: Platform> {
     env: Env,
     platform: P,
 }
 
-impl Default for Vm<NoPlatform> {
-    fn default() -> Self {
+impl<P: Platform> Vm<P> {
+    pub fn new(platform: P) -> Self
+    where
+        P: Platform,
+    {
         Self {
-            platform: NoPlatform,
+            platform,
             env: Default::default(),
         }
     }
-}
 
-impl<P: Platform> Vm<P> {
     pub fn with_env<I>(mut self, env: I) -> Self
     where
         I: IntoIterator<Item = (String, Expr)>,
@@ -23,14 +24,6 @@ impl<P: Platform> Vm<P> {
         for (k, v) in env {
             self.env.insert(k, v);
         }
-        self
-    }
-
-    pub fn with_platform(mut self, p: P) -> Self
-    where
-        P: Platform,
-    {
-        self.platform = p;
         self
     }
 
