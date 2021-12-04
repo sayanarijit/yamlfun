@@ -65,14 +65,21 @@ in:
       - - [Maybe.map, [(+), { :: 1 }]]
         - - [Maybe.map, [(+), { :: 1 }]]
           - { :: 10 }
-    e: [Pair.car, cons]
-    f: [Pair.cdr, cons]
+    e:
+      :>:
+        - { :: 10 }
+        - [Maybe.map, [(+), { :: 1 }]]
+        - [Maybe.map, [(+), { :: 1 }]]
+        - [Maybe.withDefault, { :: 0 }]
+
+    f: [Pair.car, cons]
+    g: [Pair.cdr, cons]
 ```
 
 Result:
 
 ```
-{a: 6, b: null, c: 0, d: 12, e: 1, f: 2}
+{a: 6, b: null, c: 0, d: 12, e: 12, f: 1, g: 2}
 ```
 
 ## Things that (probably) work
@@ -101,6 +108,21 @@ do:
 
 ```yaml
 [func, arg1, arg2]
+```
+
+### Chaining
+
+```
+let:
+  (+):
+    lambda: [x, y]
+    do:
+      +: [x, y]
+in:
+  :>:
+    - { :: 1 }
+    - [(+), { :: 5 }]
+    - [(+), { :: 4 }]
 ```
 
 ### Record

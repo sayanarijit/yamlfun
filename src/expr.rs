@@ -2,8 +2,8 @@ use crate::platform::Platform;
 use crate::value::{Function, Record as RecordVal};
 use crate::{yaml, Env, Value, Yaml};
 use crate::{Error, Result};
-use serde::{Deserialize, Serialize};
 use indexmap::IndexMap;
+use serde::{Deserialize, Serialize};
 use std::fmt;
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
@@ -23,6 +23,7 @@ pub enum Expr {
     With(Box<With>),
     Get(Get),
     PlatformCall(Box<PlatformCall>),
+    Chain(Box<Chain>),
     Value(#[serde(skip)] Value),
 }
 
@@ -228,6 +229,19 @@ impl Expr {
                 }
             }
             Expr::PlatformCall(p) => platform.call(&p.platform, p.arg.eval(env, platform)?),
+            Self::Chain(c) => {
+                if let Some((target, fields)) = c.args.split_first() {
+                    let mut target = target.clone().eval(env.clone(), platform)?;
+                    for f in fields {
+                        if let Value::Function(f) = f.to_owned().eval(env.clone(), platform)? {
+                            target = f.call([Ok(target)], platform)?;
+                        }
+                    }
+                    Ok(target)
+                } else {
+                    Err(Error::NotEnoughArguments(".".into(), 2, c.args.len()))
+                }
+            }
         }
     }
 }
@@ -344,5 +358,12 @@ pub struct Sum {
 #[serde(deny_unknown_fields)]
 pub struct Equals {
     #[serde(rename = "==")]
+    args: Vec<Expr>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct Chain {
+    #[serde(rename = ":>")]
     args: Vec<Expr>,
 }

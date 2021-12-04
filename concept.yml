@@ -56,5 +56,12 @@ in:
       - - [Maybe.map, [(+), { :: 1 }]]
         - - [Maybe.map, [(+), { :: 1 }]]
           - { :: 10 }
-    e: [Pair.car, cons]
-    f: [Pair.cdr, cons]
+    e:
+      :>:
+        - { :: 10 }
+        - [Maybe.map, [(+), { :: 1 }]]
+        - [Maybe.map, [(+), { :: 1 }]]
+        - [Maybe.withDefault, { :: 0 }]
+
+    f: [Pair.car, cons]
+    g: [Pair.cdr, cons]
