@@ -2,6 +2,7 @@ use crate::{yaml, yaml::Value as Yaml, Value};
 use crate::{Error, Result};
 use indexmap::IndexMap;
 use serde::ser::{Serialize, SerializeMap, Serializer};
+use serde_json as json;
 use std::ops::Deref;
 use std::result;
 
@@ -52,8 +53,8 @@ impl Record {
             }
             Yaml::Bool(b) => format!("({})", b),
             Yaml::Number(n) => format!("({})", n),
-            Yaml::Sequence(s) => format!("({:?})", s),
-            Yaml::Mapping(m) => format!("({:?})", m),
+            Yaml::Sequence(s) => format!("({})", json::to_string(s).unwrap()),
+            Yaml::Mapping(m) => format!("({})", json::to_string(m).unwrap()),
         }
     }
 
