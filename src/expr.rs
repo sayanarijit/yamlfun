@@ -300,6 +300,13 @@ impl Expr {
 
             Expr::CaseOf(c) => {
                 let case = c.case.eval(env.clone(), platform)?;
+
+                if let Ok(y) = yaml::to_value(&case) {
+                    if let Some(e) = c.of.exact.get(&y).cloned() {
+                        return e.eval(env, platform);
+                    }
+                }
+
                 match &case {
                     Value::Null => {
                         c.of.unit
@@ -562,6 +569,8 @@ pub struct CaseOf {
 #[derive(Default, Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct Matcher {
+    exact: IndexMap<Yaml, Expr>,
+
     #[serde(default, rename = "()")]
     unit: Option<Expr>,
 

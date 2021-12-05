@@ -7,6 +7,10 @@ let:
     do:
       case: var
       of:
+        exact:
+          1: {:: this is one}
+          []: {:: this is empty list}
+          bar: {:: this is bar}
         (): {:: this null}
         bool: 
           lambda: [b]
@@ -37,9 +41,12 @@ in:
     - [handle, {:: null}]
     - [handle, {:: true}]
     - [handle, {:: 1}]
+    - [handle, {:: 2}]
     - [handle, {:: 1.1}]
     - [handle, {:: foo}]
+    - [handle, {:: bar}]
     - [handle, handle]
+    - [handle, {:: []}]
     - [handle, {:: [a, b]}]
     - [handle, {:: {foo: bar}}]
 "#;
