@@ -18,7 +18,7 @@ pub enum Expr {
     Equals(Equals),
     Constant(Constant),
     Variable(String),
-    List(List),
+    List(Box<List>),
     Record(Record),
     With(Box<With>),
     Get(Get),
@@ -162,18 +162,34 @@ impl Expr {
             }
 
             Self::Sum(s) => {
-                let mut sum = Value::Number(0.into());
-                for arg in s.args {
-                    match (sum, arg.eval(env.clone(), platform)?) {
-                        (Value::Number(n1), Value::Number(n2)) => {
-                            sum =
-                                Value::Number((n1.as_i64().unwrap() + n2.as_i64().unwrap()).into());
-                            // TODO: Handle all cases
+                let mut args = s.args.into_iter();
+                if let Some(sum) = args.next().map(|a| a.eval(env.clone(), platform)) {
+                    let mut sum = sum?;
+                    for arg in args {
+                        match (sum, arg.eval(env.clone(), platform)?) {
+                            (Value::Number(n1), Value::Number(n2)) => {
+                                sum = Value::Number(
+                                    (n1.as_i64().unwrap() + n2.as_i64().unwrap()).into(),
+                                );
+                                // TODO: Handle all cases
+                            }
+                            (Value::List(l1), Value::List(l2)) => {
+                                let mut list = l1.0.clone();
+                                list.append(&mut l2.0.clone());
+                                sum = Value::List(list.into());
+                            }
+                            (Value::String(s1), Value::String(s2)) => {
+                                sum = Value::String(format!("{}{}", s1, s2));
+                            }
+                            (n1, n2) => {
+                                return Err(Error::InvalidArguments("+".into(), vec![n1, n2]))
+                            }
                         }
-                        (n1, n2) => return Err(Error::InvalidArguments("+".into(), vec![n1, n2])),
                     }
+                    Ok(sum)
+                } else {
+                    Err(Error::NotEnoughArguments("+".into(), 1, 0))
                 }
-                Ok(sum)
             }
 
             Self::Equals(e) => {
@@ -296,33 +312,11 @@ impl Record {
     }
 }
 
-impl<I> From<I> for Record
-where
-    I: IntoIterator<Item = (String, Expr)>,
-{
-    fn from(items: I) -> Self {
-        Self {
-            items: items.into_iter().collect(),
-        }
-    }
-}
-
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 #[serde(deny_unknown_fields)]
 pub struct List {
     #[serde(rename = "list")]
     items: Vec<Expr>,
-}
-
-impl<I> From<I> for List
-where
-    I: IntoIterator<Item = Expr>,
-{
-    fn from(items: I) -> Self {
-        Self {
-            items: items.into_iter().collect(),
-        }
-    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]

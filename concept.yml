@@ -45,6 +45,10 @@ let:
             do: b
 
   cons: [Cons.new, { :: 1 }, { :: 2 }]
+  foobar:
+    - (+)
+    - { :: foo }
+    - { :: bar }
 
 in:
   rec:
@@ -65,3 +69,11 @@ in:
 
     f: [Cons.car, cons]
     g: [Cons.cdr, cons]
+    h:
+      - (+)
+      - list:
+          - foobar
+          - cons
+          - Maybe
+          - [Cons.car, cons]
+      - :: [1, 1.2, -9, null, bar]

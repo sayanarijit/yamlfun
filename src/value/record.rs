@@ -1,6 +1,6 @@
 use crate::{yaml, yaml::Value as Yaml, Value};
 use crate::{Error, Result};
-use indexmap::{map, IndexMap};
+use indexmap::IndexMap;
 use serde::ser::{Serialize, SerializeMap, Serializer};
 use std::ops::Deref;
 use std::result;
@@ -16,18 +16,12 @@ impl Deref for Record {
     }
 }
 
-impl From<IndexMap<String, Value>> for Record {
-    fn from(m: IndexMap<String, Value>) -> Self {
-        Self(m)
-    }
-}
-
-impl IntoIterator for Record {
-    type Item = (String, Value);
-    type IntoIter = map::IntoIter<String, Value>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.0.into_iter()
+impl<I> From<I> for Record
+where
+    I: IntoIterator<Item = (String, Value)>,
+{
+    fn from(items: I) -> Self {
+        Self(items.into_iter().collect())
     }
 }
 

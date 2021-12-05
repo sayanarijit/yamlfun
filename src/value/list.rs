@@ -13,18 +13,12 @@ impl Deref for List {
     }
 }
 
-impl From<Vec<Value>> for List {
-    fn from(v: Vec<Value>) -> Self {
-        Self(v)
-    }
-}
-
-impl IntoIterator for List {
-    type Item = Value;
-    type IntoIter = std::vec::IntoIter<Value>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.0.into_iter()
+impl<I> From<I> for List
+where
+    I: IntoIterator<Item = Value>,
+{
+    fn from(items: I) -> Self {
+        Self(items.into_iter().collect())
     }
 }
 
