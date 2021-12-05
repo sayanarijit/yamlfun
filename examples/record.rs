@@ -1,4 +1,4 @@
-use yamlfun::{Expr, Vm, DefaultPlatform, yaml};
+use yamlfun::{yaml, DefaultPlatform, Expr, Vm};
 
 const REC: &str = r#"
 let:
@@ -9,6 +9,14 @@ let:
           b: {:: {1: bar, true: baz}}
           "10": {:: foo}
       e: {:: {y: z}}
+
+  betterFoo:
+    update: foo
+    set:
+      a: {:: bar}
+      oldFoo: foo
+    unset: [e]
+
 in:
   rec:
     one:
@@ -21,6 +29,7 @@ in:
       lambda: [a, b]
       do:
         +: [a, b]
+    betterFoo: betterFoo
 "#;
 
 fn main() {

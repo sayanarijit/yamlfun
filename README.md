@@ -188,6 +188,16 @@ foo.a.b.(1)
 .: [foo, { :: a }, { :: b }, { :: 1 }]
 ```
 
+### Record field update
+
+```yaml
+update: foo
+set:
+  a: { :: bar }
+  oldFoo: foo
+unset: [e]
+```
+
 ### List
 
 ```yaml

@@ -3,6 +3,7 @@ use crate::value::{Function, Record as RecordVal};
 use crate::{yaml, Env, Value, Yaml};
 use crate::{Error, Result};
 use indexmap::IndexMap;
+use indexmap::IndexSet;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
@@ -22,6 +23,7 @@ pub enum Expr {
     Record(Record),
     With(Box<With>),
     Get(Get),
+    Update(Box<Update>),
     PlatformCall(Box<PlatformCall>),
     Chain(Box<Chain>),
     CaseOf(Box<CaseOf>),
@@ -257,7 +259,31 @@ impl Expr {
                     Err(Error::NotEnoughArguments(".".into(), 2, g.args.len()))
                 }
             }
+
+            Expr::Update(u) => {
+                let rec = u.update.clone().eval(env.clone(), platform)?;
+
+                match rec {
+                    Value::Record(r) => {
+                        let mut newrec: IndexMap<String, Value> = r
+                            .iter()
+                            .filter(|(k, _)| !u.unset.contains(*k))
+                            .map(|(k, v)| (k.clone(), v.clone()))
+                            .collect();
+
+                        for (k, v) in u.set {
+                            let val = v.eval(env.clone(), platform)?;
+                            newrec.insert(k, val);
+                        }
+
+                        Ok(newrec.into())
+                    }
+                    _ => Err(Error::NotARecord(rec)),
+                }
+            }
+
             Expr::PlatformCall(p) => platform.call(&p.platform, p.arg.eval(env, platform)?),
+
             Self::Chain(c) => {
                 if let Some((target, fields)) = c.args.split_first() {
                     let mut target = target.clone().eval(env.clone(), platform)?;
@@ -437,6 +463,18 @@ pub struct With {
 pub struct Get {
     #[serde(rename = ".")]
     args: Vec<Expr>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
+#[serde(deny_unknown_fields)]
+pub struct Update {
+    update: Expr,
+
+    #[serde(default)]
+    set: IndexMap<String, Expr>,
+
+    #[serde(default)]
+    unset: IndexSet<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
