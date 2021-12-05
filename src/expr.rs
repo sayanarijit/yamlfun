@@ -166,12 +166,28 @@ impl Expr {
                 if let Some(sum) = args.next().map(|a| a.eval(env.clone(), platform)) {
                     let mut sum = sum?;
                     for arg in args {
-                        match (sum, arg.eval(env.clone(), platform)?) {
+                        let arg = arg.eval(env.clone(), platform)?;
+                        match (&sum, &arg) {
                             (Value::Number(n1), Value::Number(n2)) => {
-                                sum = Value::Number(
-                                    (n1.as_i64().unwrap() + n2.as_i64().unwrap()).into(),
-                                );
-                                // TODO: Handle all cases
+                                if let Some(s) = n1
+                                    .as_f64()
+                                    .and_then(|i1| n2.as_f64().map(|i2| (i1 + i2).into()))
+                                    .or_else(|| {
+                                        n1.as_u64()
+                                            .and_then(|i1| n2.as_u64().map(|i2| (i1 + i2).into()))
+                                    })
+                                    .or_else(|| {
+                                        n1.as_i64()
+                                            .and_then(|i1| n2.as_i64().map(|i2| (i1 + i2).into()))
+                                    })
+                                {
+                                    sum = Value::Number(s);
+                                } else {
+                                    return Err(Error::InvalidArguments(
+                                        "+".into(),
+                                        vec![sum, arg],
+                                    ));
+                                }
                             }
                             (Value::List(l1), Value::List(l2)) => {
                                 let mut list = l1.0.clone();
@@ -182,7 +198,10 @@ impl Expr {
                                 sum = Value::String(format!("{}{}", s1, s2));
                             }
                             (n1, n2) => {
-                                return Err(Error::InvalidArguments("+".into(), vec![n1, n2]))
+                                return Err(Error::InvalidArguments(
+                                    "+".into(),
+                                    vec![n1.clone(), n2.clone()],
+                                ))
                             }
                         }
                     }
