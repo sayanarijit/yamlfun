@@ -31,9 +31,9 @@ let:
     do:
       +: [x, y]
 
-  Pair:
+  Cons:
     rec:
-      cons:
+      new:
         lambda: [a, b]
         do:
           lambda: [op]
@@ -53,7 +53,7 @@ let:
           - lambda: [a, b]
             do: b
 
-  cons: [Pair.cons, { :: 1 }, { :: 2 }]
+  cons: [Cons.new, { :: 1 }, { :: 2 }]
 
 in:
   rec:
@@ -72,8 +72,8 @@ in:
         - [Maybe.map, [(+), { :: 1 }]]
         - [Maybe.withDefault, { :: 0 }]
 
-    f: [Pair.car, cons]
-    g: [Pair.cdr, cons]
+    f: [Cons.car, cons]
+    g: [Cons.cdr, cons]
 ```
 
 Result:
