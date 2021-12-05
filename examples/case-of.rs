@@ -7,7 +7,7 @@ let:
     do:
       case: var
       of:
-        exact:
+        ==:
           1: {:: this is one}
           []: {:: this is empty list}
           bar: {:: this is bar}

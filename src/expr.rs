@@ -569,6 +569,7 @@ pub struct CaseOf {
 #[derive(Default, Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct Matcher {
+    #[serde(default, rename = "==")]
     exact: IndexMap<Yaml, Expr>,
 
     #[serde(default, rename = "()")]
