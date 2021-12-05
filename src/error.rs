@@ -33,6 +33,9 @@ pub enum Error {
 
     #[error("{0} requires at-least {1} arguments, but {2} was provided")]
     NotEnoughArguments(String, usize, usize),
+
+    #[error("{0} is not being handled in the case-of statement")]
+    CaseError(Value),
     // #[error("the data for key `{0}` is not available")]
     // Redaction(String),
     // #[error("invalid header (expected {expected:?}, found {found:?})")]

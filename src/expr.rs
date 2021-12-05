@@ -24,6 +24,7 @@ pub enum Expr {
     Get(Get),
     PlatformCall(Box<PlatformCall>),
     Chain(Box<Chain>),
+    CaseOf(Box<CaseOf>),
     Value(#[serde(skip)] Value),
 }
 
@@ -99,14 +100,7 @@ impl Expr {
                 Ok(Value::Record(items.into()))
             }
 
-            Self::Lambda(l) => {
-                let func = Function {
-                    args: l.lambda,
-                    env,
-                    expr: l.do_,
-                };
-                Ok(Value::Function(Box::new(func)))
-            }
+            Self::Lambda(l) => Ok(Value::Function(Box::new(l.to_function(env)))),
 
             Self::Variable(name) => {
                 if let Some((first, rest)) = name.split_once('.') {
@@ -277,6 +271,135 @@ impl Expr {
                     Err(Error::NotEnoughArguments(".".into(), 2, c.args.len()))
                 }
             }
+
+            Expr::CaseOf(c) => {
+                let case = c.case.eval(env.clone(), platform)?;
+                match &case {
+                    Value::Null => {
+                        c.of.unit
+                            .map(|u| u.eval(env, platform))
+                            .unwrap_or_else(|| Err(Error::CaseError(case.into())))
+                    }
+
+                    Value::Bool(b) => {
+                        c.of.boolean
+                            .map(|l| {
+                                let args = match l.lambda.len() {
+                                    0 => vec![],
+                                    1 => vec![Ok(b.clone().into())],
+                                    _ => return Err(Error::CaseError(b.clone().into())),
+                                };
+                                let func = l.to_function(env);
+                                func.call(args, platform)
+                            })
+                            .unwrap_or_else(|| Err(Error::CaseError(b.clone().into())))
+                    }
+
+                    Value::Number(n) => {
+                        if n.is_i64() || n.is_u64() {
+                            c.of.integer
+                                .map(|l| {
+                                    let args = match l.lambda.len() {
+                                        0 => vec![],
+                                        1 => vec![Ok(n.clone().into())],
+                                        _ => return Err(Error::CaseError(n.clone().into())),
+                                    };
+                                    let func = l.to_function(env);
+                                    func.call(args, platform)
+                                })
+                                .unwrap_or_else(|| Err(Error::CaseError(n.clone().into())))
+                        } else {
+                            c.of.float
+                                .map(|l| {
+                                    let args = match l.lambda.len() {
+                                        0 => vec![],
+                                        1 => vec![Ok(case.clone().into())],
+                                        _ => return Err(Error::CaseError(case.clone().into())),
+                                    };
+                                    let func = l.to_function(env);
+                                    func.call(args, platform)
+                                })
+                                .unwrap_or_else(|| Err(Error::CaseError(case.clone().into())))
+                        }
+                    }
+
+                    Value::String(s) => c
+                        .of
+                        .string
+                        .map(|l| {
+                            let args = match l.lambda.len() {
+                                0 => vec![],
+                                1 => vec![Ok(s.clone().into())],
+                                2 => {
+                                    let (head, tail) = s.split_at(1);
+                                    vec![Ok(head.to_string().into()), Ok(tail.to_string().into())]
+                                }
+                                _ => return Err(Error::CaseError(s.clone().into())),
+                            };
+                            let func = l.to_function(env);
+                            func.call(args, platform)
+                        })
+                        .unwrap_or_else(|| Err(Error::CaseError(s.clone().into()))),
+
+                    Value::List(s) => {
+                        c.of.list
+                            .map(|l| {
+                                let args = match l.lambda.len() {
+                                    0 => vec![],
+                                    1 => vec![Ok(case.clone().into())],
+                                    2 => {
+                                        if let Some((head, tail)) = s.split_first() {
+                                            vec![
+                                                Ok(head.clone().into()),
+                                                Ok(Value::List(
+                                                    tail.clone()
+                                                        .into_iter()
+                                                        .map(Clone::clone)
+                                                        .map(Value::from)
+                                                        .into(),
+                                                )),
+                                            ]
+                                        } else {
+                                            vec![Ok(Value::Null), Ok(Value::List(vec![].into()))]
+                                        }
+                                    }
+                                    _ => return Err(Error::CaseError(case.clone().into())),
+                                };
+                                let func = l.to_function(env);
+                                func.call(args, platform)
+                            })
+                            .unwrap_or_else(|| Err(Error::CaseError(case.clone().into())))
+                    }
+
+                    Value::Record(_) => {
+                        c.of.rec
+                            .map(|l| {
+                                let args = match l.lambda.len() {
+                                    0 => vec![],
+                                    1 => vec![Ok(case.clone().into())],
+                                    _ => return Err(Error::CaseError(case.clone().into())),
+                                };
+                                let func = l.to_function(env);
+                                func.call(args, platform)
+                            })
+                            .unwrap_or_else(|| Err(Error::CaseError(case.clone().into())))
+                    }
+
+                    Value::Function(f) => {
+                        c.of.function
+                            .map(|l| {
+                                let args = match l.lambda.len() {
+                                    0 => vec![],
+                                    1 => vec![Ok(f.clone().into())],
+                                    _ => return Err(Error::CaseError(f.clone().into())),
+                                };
+                                let func = l.to_function(env);
+                                func.call(args, platform)
+                            })
+                            .unwrap_or_else(|| Err(Error::CaseError(f.clone().into())))
+                    }
+                }
+            }
         }
     }
 }
@@ -288,6 +411,16 @@ pub struct Lambda {
 
     #[serde(rename = "do")]
     do_: Expr,
+}
+
+impl Lambda {
+    fn to_function(self, env: Env) -> Function {
+        Function {
+            args: self.lambda,
+            env,
+            expr: self.do_,
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
@@ -379,4 +512,42 @@ pub struct Equals {
 pub struct Chain {
     #[serde(rename = ":>")]
     args: Vec<Expr>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct CaseOf {
+    case: Expr,
+    of: Matcher,
+}
+
+#[derive(Default, Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct Matcher {
+    #[serde(default, rename = "()")]
+    unit: Option<Expr>,
+
+    #[serde(default, rename = "bool")]
+    boolean: Option<Lambda>,
+
+    #[serde(default, rename = "int")]
+    integer: Option<Lambda>,
+
+    #[serde(default)]
+    float: Option<Lambda>,
+
+    #[serde(default)]
+    string: Option<Lambda>,
+
+    #[serde(default)]
+    function: Option<Lambda>,
+
+    #[serde(default)]
+    list: Option<Lambda>,
+
+    #[serde(default)]
+    rec: Option<Lambda>,
+
+    #[serde(default, rename = "_")]
+    default: Option<Lambda>,
 }

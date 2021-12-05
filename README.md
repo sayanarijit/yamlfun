@@ -8,6 +8,11 @@ Code:
 
 ```yaml
 let:
+  (+):
+    lambda: [x, y]
+    do:
+      +: [x, y]
+
   Maybe:
     rec:
       map:
@@ -26,10 +31,25 @@ let:
           then: default
           else: val
 
-  (+):
-    lambda: [x, y]
-    do:
-      +: [x, y]
+  List:
+    rec:
+      head:
+        lambda: [list]
+        do:
+          case: list
+          of:
+            list:
+              lambda: [head, tail]
+              do: head
+
+      tail:
+        lambda: [list]
+        do:
+          case: list
+          of:
+            list:
+              lambda: [head, tail]
+              do: tail
 
   Cons:
     rec:
@@ -54,7 +74,19 @@ let:
             do: b
 
   cons: [Cons.new, { :: 1 }, { :: 2 }]
+  foobar:
+    - (+)
+    - { :: foo }
+    - { :: bar }
 
+  things:
+    - (+)
+    - list:
+        - foobar
+        - cons
+        - Maybe
+        - [Cons.car, cons]
+    - :: [1, 1.2, -9, null, bar]
 in:
   rec:
     a: [Maybe.map, [(+), { :: 1 }], { :: 5 }]
@@ -74,12 +106,18 @@ in:
 
     f: [Cons.car, cons]
     g: [Cons.cdr, cons]
+    h: [List.head, things]
+    i:
+      :>:
+        - [List.tail, things]
+        - List.head
+        - Cons.car
 ```
 
 Result:
 
 ```
-{a: 6, b: null, c: 0, d: 12, e: 12, f: 1, g: 2}
+{a: 6, b: null, c: 0, d: 12, e: 12, f: 1, g: 2, h: "foobar", i: 1}
 ```
 
 ## Things that (probably) work
@@ -196,6 +234,52 @@ in:
   with: [args1, args2]
   do:
     +: [first, second, third]
+```
+
+### Case Of
+
+```yaml
+let:
+  handle:
+    lambda: [var]
+    do:
+      case: var
+      of:
+        (): { :: this null }
+        bool:
+          lambda: [b]
+          do: { :: this is a bool }
+        int:
+          lambda: [n]
+          do: { :: this is an int }
+        float:
+          lambda: [f]
+          do: { :: this is a float }
+        string:
+          lambda: [first, rest]
+          do: first
+        function:
+          lambda: [f]
+          do: { :: this is a function }
+        list:
+          lambda: [head, tail]
+          do: head
+        rec:
+          lambda: [r]
+          do: r.foo
+        _:
+          lambda: [wtf]
+          do: { :: 'wtf??' }
+in:
+  list:
+    - [handle, { :: null }]
+    - [handle, { :: true }]
+    - [handle, { :: 1 }]
+    - [handle, { :: 1.1 }]
+    - [handle, { :: foo }]
+    - [handle, handle]
+    - [handle, { :: [a, b] }]
+    - [handle, { :: { foo: bar } }]
 ```
 
 ### Platform Call

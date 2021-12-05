@@ -1,4 +1,9 @@
 let:
+  (+):
+    lambda: [x, y]
+    do:
+      +: [x, y]
+
   Maybe:
     rec:
       map:
@@ -17,10 +22,25 @@ let:
           then: default
           else: val
 
-  (+):
-    lambda: [x, y]
-    do:
-      +: [x, y]
+  List:
+    rec:
+      head:
+        lambda: [list]
+        do:
+          case: list
+          of:
+            list:
+              lambda: [head, tail]
+              do: head
+
+      tail:
+        lambda: [list]
+        do:
+          case: list
+          of:
+            list:
+              lambda: [head, tail]
+              do: tail
 
   Cons:
     rec:
@@ -50,6 +70,14 @@ let:
     - { :: foo }
     - { :: bar }
 
+  things:
+    - (+)
+    - list:
+        - foobar
+        - cons
+        - Maybe
+        - [Cons.car, cons]
+    - :: [1, 1.2, -9, null, bar]
 in:
   rec:
     a: [Maybe.map, [(+), { :: 1 }], { :: 5 }]
@@ -69,11 +97,9 @@ in:
 
     f: [Cons.car, cons]
     g: [Cons.cdr, cons]
-    h:
-      - (+)
-      - list:
-          - foobar
-          - cons
-          - Maybe
-          - [Cons.car, cons]
-      - :: [1, 1.2, -9, null, bar]
+    h: [List.head, things]
+    i: 
+      :>:
+        - [List.tail, things]
+        - List.head
+        - Cons.car

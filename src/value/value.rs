@@ -1,11 +1,13 @@
 use crate::value::{Function, List, Number, Record};
+use crate::yaml;
 use crate::yaml::Value as Yaml;
 use crate::{Error, Result};
+use indexmap::IndexMap;
 use serde::ser::{Serialize, Serializer};
 use serde::Deserialize;
+use std::convert::TryInto;
 use std::fmt;
 use std::result;
-use indexmap::IndexMap;
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(from = "Yaml")]
@@ -150,6 +152,15 @@ impl From<Yaml> for Value {
                     .into(),
             ),
         }
+    }
+}
+
+impl TryInto<Yaml> for Value {
+    type Error = Error;
+
+    fn try_into(self) -> Result<Yaml> {
+        let y = yaml::to_value(self)?;
+        Ok(y)
     }
 }
 
