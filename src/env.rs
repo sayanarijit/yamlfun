@@ -1,4 +1,4 @@
 use crate::expr::Expr;
-use indexmap::IndexMap;
+use std::collections::HashMap;
 
-pub type Env = IndexMap<String, Expr>;
+pub type Env = HashMap<String, Expr>;
