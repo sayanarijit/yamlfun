@@ -19,7 +19,7 @@ const SUM: &str = r#"
 "#;
 
 fn main() {
-    let vm = Vm::new(DefaultPlatform);
+    let vm = Vm::new(DefaultPlatform).unwrap();
 
     let one: Expr = yaml::from_str(ONE.trim()).unwrap();
     let one = vm.eval(one.clone()).unwrap();

@@ -6,7 +6,7 @@ const BAR: &str = ":: {foo: bar, 1: true}";
 const BAZ: &str = ":: [baz, 1, true, {a: b}]";
 
 fn main() {
-    let vm = Vm::new(DefaultPlatform);
+    let vm = Vm::new(DefaultPlatform).unwrap();
     let one: Expr = yaml::from_str(ONE.trim()).unwrap();
     let one = vm.eval(one).unwrap();
     println!("{}", one);

@@ -4,7 +4,7 @@ use std::io::{self, Read};
 use yamlfun::{yaml, DefaultPlatform, Expr, Vm};
 
 fn main() -> Result<()> {
-    let vm = Vm::new(DefaultPlatform);
+    let vm = Vm::new(DefaultPlatform)?;
 
     let code = if let Some(file) = std::env::args().skip(1).next() {
         fs::read_to_string(file)?

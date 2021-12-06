@@ -27,7 +27,7 @@ const NESTED: &str = r"
 ";
 
 fn main() {
-    let vm = Vm::new(DefaultPlatform);
+    let vm = Vm::new(DefaultPlatform).unwrap();
 
     let yes: Expr = yaml::from_str(YES.trim()).unwrap();
     println!("{}", vm.eval(yes).unwrap());

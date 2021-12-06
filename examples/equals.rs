@@ -6,7 +6,7 @@ const FOO: &str = ":==: [:: foo, :: foo]";
 const BAR: &str = ":==: [:: foo, :: var]";
 
 fn main() {
-    let vm = Vm::new(DefaultPlatform);
+    let vm = Vm::new(DefaultPlatform).unwrap();
 
     let yes: Expr = yaml::from_str(YES.trim()).unwrap();
     let yes = vm.eval(yes).unwrap();

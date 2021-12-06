@@ -1,8 +1,8 @@
 mod env;
 mod error;
 mod value;
-mod vm;
 
+pub mod vm;
 pub mod expr;
 pub mod platform;
 

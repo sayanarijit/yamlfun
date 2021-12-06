@@ -4,7 +4,7 @@ const ONE: &str = ":+: [:: 1]";
 const THREE: &str = ":+: [:: 1, :: 2]";
 
 fn main() {
-    let vm = Vm::new(DefaultPlatform);
+    let vm = Vm::new(DefaultPlatform).unwrap();
 
     let one: Expr = yaml::from_str(ONE.trim()).unwrap();
     let one = vm.eval(one).unwrap();

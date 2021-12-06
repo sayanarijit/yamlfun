@@ -33,7 +33,7 @@ const RESTORE: &str = "
 ";
 
 fn main() {
-    let vm = Vm::new(DefaultPlatform);
+    let vm = Vm::new(DefaultPlatform).unwrap();
 
     let let_in: Expr = yaml::from_str(LET_IN.trim()).unwrap();
     println!("{}", vm.eval(let_in).unwrap());

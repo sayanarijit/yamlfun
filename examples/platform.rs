@@ -1,24 +1,24 @@
-use yamlfun::expr::{Lambda, PlatformCall};
 use yamlfun::platform::{DefaultPlatform, Platform};
-use yamlfun::{yaml, Error, Expr, Function, Result, Value, Vm};
+use yamlfun::{vm, yaml, Error, Expr, Function, Result, Value, Vm};
 
-const PCALL: &str = r#"[[import, {:: ./concept.yml}]]"#;
+const PCALL: &str = r#"
+:lambda: [path]
+:do:
+  - :platform: import
+    :arg: path
+"#;
 
 struct MyPlatform(DefaultPlatform);
 
-impl MyPlatform {
-    fn init() -> Vm<MyPlatform> {
-        let vm = Vm::new(MyPlatform(DefaultPlatform));
-        let func = Lambda::new(
-            vec!["path".to_string()],
-            PlatformCall::new("import".into(), Expr::Variable("path".into())).into(),
-        );
-
-        vm.with_env([("import".to_string(), Expr::Lambda(Box::new(func)))])
-    }
-}
-
 impl Platform for MyPlatform {
+    fn init(&self, state: &mut vm::State) -> Result<()> {
+        self.0.init(state)?;
+
+        let import = yaml::from_str(PCALL)?;
+        state.set_env("import".into(), import);
+        Ok(())
+    }
+
     fn call(&self, name: &str, arg: Value) -> Result<Value> {
         match name {
             "import" => match arg {
@@ -37,9 +37,10 @@ impl Platform for MyPlatform {
 }
 
 fn main() {
-    let vm = MyPlatform::init();
+    let platform = MyPlatform(DefaultPlatform);
+    let vm = Vm::new(platform).unwrap();
 
-    let rec: Expr = yaml::from_str(PCALL.trim()).unwrap();
+    let rec: Expr = yaml::from_str("[import, {:: ./concept.yml}]").unwrap();
     let rec = vm.eval(rec).unwrap();
     println!("{}", &rec);
 }

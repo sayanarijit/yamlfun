@@ -307,7 +307,7 @@ struct MyPlatform(DefaultPlatform);
 impl Platform for MyPlatform { ... }
 
 fn main() {
-    let vm = Vm::new(MyPlatform(DefaultPlatform));
+    let vm = Vm::new(MyPlatform(DefaultPlatform)).unwrap();
     ...
 }
 ```

@@ -9,7 +9,7 @@ const SUM: &str = "
 ";
 
 fn main() {
-    let vm = Vm::new(DefaultPlatform);
+    let vm = Vm::new(DefaultPlatform).unwrap();
 
     let sum: Expr = yaml::from_str(SUM.trim()).unwrap();
     let sum = vm.eval(sum).unwrap();

@@ -16,7 +16,7 @@ const WITH: &str = r#"
 "#;
 
 fn main() {
-    let vm = Vm::new(DefaultPlatform);
+    let vm = Vm::new(DefaultPlatform).unwrap();
 
     let with: Expr = yaml::from_str(WITH.trim()).unwrap();
     let with = vm.eval(with).unwrap();

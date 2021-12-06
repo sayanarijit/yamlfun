@@ -1,20 +1,31 @@
 use crate::platform::Platform;
 use crate::{Env, Error, Expr, Result, Value};
 
-pub struct Vm<P: Platform> {
+#[derive(Default)]
+pub struct State {
     env: Env,
+}
+
+impl State {
+    pub fn set_env(&mut self, name: String, expr: Expr) {
+        self.env.insert(name, expr);
+    }
+}
+
+pub struct Vm<P: Platform> {
+    state: State,
     platform: P,
 }
 
 impl<P: Platform> Vm<P> {
-    pub fn new(platform: P) -> Self
+    pub fn new(platform: P) -> Result<Self>
     where
         P: Platform,
     {
-        Self {
-            platform,
-            env: Default::default(),
-        }
+        let mut state: State = Default::default();
+        platform.init(&mut state)?;
+
+        Ok(Self { platform, state })
     }
 
     pub fn with_env<I>(mut self, env: I) -> Self
@@ -22,13 +33,17 @@ impl<P: Platform> Vm<P> {
         I: IntoIterator<Item = (String, Expr)>,
     {
         for (k, v) in env {
-            self.env.insert(k, v);
+            self.set_env(k, v);
         }
         self
     }
 
+    pub fn set_env(&mut self, name: String, expr: Expr) {
+        self.state.set_env(name, expr);
+    }
+
     pub fn eval(&self, expr: Expr) -> Result<Value> {
-        expr.eval(self.env.clone(), &self.platform)
+        expr.eval(self.state.env.clone(), &self.platform)
     }
 
     pub fn call<I>(&self, func: Value, args: I) -> Result<Value>
@@ -39,7 +54,7 @@ impl<P: Platform> Vm<P> {
             Value::Function(func) => {
                 let args = args
                     .into_iter()
-                    .map(|a| a.eval(self.env.clone(), &self.platform));
+                    .map(|a| a.eval(self.state.env.clone(), &self.platform));
                 func.call(args, &self.platform)
             }
             _ => Err(Error::NotAFunction(func)),

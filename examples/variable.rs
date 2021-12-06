@@ -4,7 +4,7 @@ const A: &str = "a";
 const B: &str = "b";
 
 fn main() {
-    let vm = Vm::new(DefaultPlatform).with_env([
+    let vm = Vm::new(DefaultPlatform).unwrap().with_env([
         ("a".into(), Value::String("foo".into()).into()),
         ("b".into(), Expr::Variable("a".into())),
     ]);

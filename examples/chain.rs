@@ -14,7 +14,7 @@ const TEN: &str = "
 ";
 
 fn main() {
-    let vm = Vm::new(DefaultPlatform);
+    let vm = Vm::new(DefaultPlatform).unwrap();
 
     let ten: Expr = yaml::from_str(TEN.trim()).unwrap();
     println!("{}", vm.eval(ten).unwrap());

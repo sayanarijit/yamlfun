@@ -12,7 +12,7 @@ const LIST: &str = r#"
 "#;
 
 fn main() {
-    let vm = Vm::new(DefaultPlatform);
+    let vm = Vm::new(DefaultPlatform).unwrap();
 
     let rec: Expr = yaml::from_str(LIST.trim()).unwrap();
     println!("{}", vm.eval(rec).unwrap());

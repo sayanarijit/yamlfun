@@ -52,7 +52,7 @@ const CASE: &str = r#"
 "#;
 
 fn main() {
-    let vm = Vm::new(DefaultPlatform);
+    let vm = Vm::new(DefaultPlatform).unwrap();
 
     let case: Expr = yaml::from_str(CASE.trim()).unwrap();
     let case = vm.eval(case).unwrap();

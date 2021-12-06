@@ -33,7 +33,7 @@ const REC: &str = r#"
 "#;
 
 fn main() {
-    let vm = Vm::new(DefaultPlatform);
+    let vm = Vm::new(DefaultPlatform).unwrap();
 
     let rec: Expr = yaml::from_str(REC.trim()).unwrap();
     let rec = vm.eval(rec).unwrap();
