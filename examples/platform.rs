@@ -1,16 +1,22 @@
+use yamlfun::expr::{Lambda, PlatformCall};
 use yamlfun::platform::{DefaultPlatform, Platform};
 use yamlfun::{yaml, Error, Expr, Function, Result, Value, Vm};
 
-const PCALL: &str = r#"
-:let:
-  concept:
-    :platform: import
-    :arg: {:: ./concept.yml}
-:in:
-  [concept]
-"#;
+const PCALL: &str = r#"[[import, {:: ./concept.yml}]]"#;
 
 struct MyPlatform(DefaultPlatform);
+
+impl MyPlatform {
+    fn init() -> Vm<MyPlatform> {
+        let vm = Vm::new(MyPlatform(DefaultPlatform));
+        let func = Lambda::new(
+            vec!["path".to_string()],
+            PlatformCall::new("import".into(), Expr::Variable("path".into())).into(),
+        );
+
+        vm.with_env([("import".to_string(), Expr::Lambda(Box::new(func)))])
+    }
+}
 
 impl Platform for MyPlatform {
     fn call(&self, name: &str, arg: Value) -> Result<Value> {
@@ -31,7 +37,7 @@ impl Platform for MyPlatform {
 }
 
 fn main() {
-    let vm = Vm::new(MyPlatform(DefaultPlatform));
+    let vm = MyPlatform::init();
 
     let rec: Expr = yaml::from_str(PCALL.trim()).unwrap();
     let rec = vm.eval(rec).unwrap();

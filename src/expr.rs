@@ -30,6 +30,18 @@ pub enum Expr {
     Value(#[serde(skip)] Value),
 }
 
+impl From<Box<PlatformCall>> for Expr {
+    fn from(v: Box<PlatformCall>) -> Self {
+        Self::PlatformCall(v)
+    }
+}
+
+impl From<PlatformCall> for Expr {
+    fn from(v: PlatformCall) -> Self {
+        Self::PlatformCall(Box::new(v))
+    }
+}
+
 impl fmt::Display for Expr {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(&yaml::to_string(self).unwrap())
@@ -441,16 +453,20 @@ impl Expr {
 #[serde(deny_unknown_fields)]
 pub struct Lambda {
     #[serde(rename = ":lambda")]
-    lambda: Vec<String>,
+    args: Vec<String>,
 
     #[serde(rename = ":do")]
     do_: Expr,
 }
 
 impl Lambda {
-    fn to_function(self, env: Env) -> Function {
+    pub fn new(args: Vec<String>, do_: Expr) -> Self {
+        Self { args, do_ }
+    }
+
+    pub fn to_function(self, env: Env) -> Function {
         Function {
-            args: self.lambda,
+            args: self.args,
             env,
             expr: self.do_,
         }
@@ -496,6 +512,12 @@ pub struct PlatformCall {
     platform: String,
     #[serde(rename = ":arg")]
     arg: Expr,
+}
+
+impl PlatformCall {
+    pub fn new(platform: String, arg: Expr) -> Self {
+        Self { platform, arg }
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
