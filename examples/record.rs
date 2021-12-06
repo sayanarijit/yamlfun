@@ -20,7 +20,7 @@ const REC: &str = r#"
 :in:
   :rec:
     one:
-      :.: [foo, {:: a}, {:: b}, {:: 1}]
+      :get: [foo, {:: a}, {:: b}, {:: 1}]
     (1): foo.a.b.(1)
     (true): foo.a.b.(true)
     y: foo.e.y

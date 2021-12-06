@@ -180,17 +180,17 @@ foo.a.b.(1)
 ```
 
 ```yaml
-:.: [foo, { :: a }, { :: b }, { :: 1 }]
+:get: [foo, { :: a }, { :: b }, { :: 1 }]
 ```
 
 ### Record Field Update
 
 ```yaml
-update: foo
-set:
+:update: foo
+:set:
   a: { :: bar }
   oldFoo: foo
-unset: [e]
+:unset: [e]
 ```
 
 ### List
