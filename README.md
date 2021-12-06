@@ -13,6 +13,12 @@ Code:
     :do:
       :+: [x, y]
 
+  (++):
+    :lambda: [x, y]
+    :do:
+      :++: [x, y]
+
+
   (==):
     :lambda: [x, y]
     :do:
@@ -76,12 +82,12 @@ Code:
 
   cons: [Cons.new, { :: 1 }, { :: 2 }]
   foobar:
-    - (+)
+    - (++)
     - { :: foo }
     - { :: bar }
 
   things:
-    - (+)
+    - (++)
     - :list:
         - foobar
         - cons

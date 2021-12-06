@@ -16,6 +16,7 @@ pub enum Expr {
     IfElse(Box<IfElse>),
     LetIn(Box<LetIn>),
     Sum(Sum),
+    Append(Append),
     Equals(Equals),
     Constant(Constant),
     Variable(String),
@@ -197,14 +198,6 @@ impl Expr {
                                     ));
                                 }
                             }
-                            (Value::List(l1), Value::List(l2)) => {
-                                let mut list = l1.0.clone();
-                                list.append(&mut l2.0.clone());
-                                sum = Value::List(list.into());
-                            }
-                            (Value::String(s1), Value::String(s2)) => {
-                                sum = Value::String(format!("{}{}", s1, s2));
-                            }
                             (n1, n2) => {
                                 return Err(Error::InvalidArguments(
                                     "+".into(),
@@ -216,6 +209,35 @@ impl Expr {
                     Ok(sum)
                 } else {
                     Err(Error::NotEnoughArguments("+".into(), 1, 0))
+                }
+            }
+
+            Self::Append(s) => {
+                let mut args = s.args.into_iter();
+                if let Some(sum) = args.next().map(|a| a.eval(env.clone(), platform)) {
+                    let mut sum = sum?;
+                    for arg in args {
+                        let arg = arg.eval(env.clone(), platform)?;
+                        match (&sum, &arg) {
+                            (Value::List(l1), Value::List(l2)) => {
+                                let mut list = l1.0.clone();
+                                list.append(&mut l2.0.clone());
+                                sum = Value::List(list.into());
+                            }
+                            (Value::String(s1), Value::String(s2)) => {
+                                sum = Value::String(format!("{}{}", s1, s2));
+                            }
+                            (n1, n2) => {
+                                return Err(Error::InvalidArguments(
+                                    "++".into(),
+                                    vec![n1.clone(), n2.clone()],
+                                ))
+                            }
+                        }
+                    }
+                    Ok(sum)
+                } else {
+                    Err(Error::NotEnoughArguments("++".into(), 1, 0))
                 }
             }
 
@@ -572,6 +594,13 @@ pub struct IfElse {
 #[serde(deny_unknown_fields)]
 pub struct Sum {
     #[serde(rename = ":+")]
+    args: Vec<Expr>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct Append {
+    #[serde(rename = ":++")]
     args: Vec<Expr>,
 }
 
