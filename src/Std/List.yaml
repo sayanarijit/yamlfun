@@ -5,33 +5,39 @@
 :let:
   ### Put two appendable things together. This includes strings and lists.
   #
-  #:- Example: (++)
-  #:  Run:     [(++), {:: [1, 2]}, {:: [3, 4]}]
+  #:- Example: append [1, 2] [2, 3]
+  #:  Run:     [append, {:: [1, 2]}, {:: [3, 4]}]
   #:  Result:  [1, 2, 3, 4]
-  (++):
-    :lambda: [list1, list2]
-    :do:
-      :++: [list1, list2]
+  append: (++)
 
   ### Add an element to the front of a list.
   #
-  #:- Example: (::)
-  #:  Run:     [(::), {:: 1}, {:: [2, 3]}]
-  #:  Result:  [1, 2, 3 ]
-  (::):
-    :lambda: [element, list]
-    :do:
-      - (++)
-      - :list: [element]
-      - list
+  #:- Example: cons 1 [2, 3]
+  #:  Run:     [cons, {:: 1}, {:: [2, 3]}]
+  #:  Result:  [1, 2, 3]
+  cons: Basics.cons
 
-  ###  Extract the first element of a list.
+  ### Create a list with only one element.
   #
-  #:- Example: List.head
+  #:- Example: singleton 1
+  #:  Run:     [singleton, {:: 1}]
+  #:  Result:  [1]
+  #
+  #:- Example: singleton foo
+  #:  Run:     [singleton, {:: foo}]
+  #:  Result:  ["foo"]
+  singleton:
+    :lambda: [value]
+    :do:
+      :list: [value]
+
+  ### Extract the first element of a list.
+  #
+  #:- Example: List.head [1, 2, 3]
   #:  Run:     [List.head, {:: [1, 2, 3]}]
   #:  Result:  1
   #
-  #:- Example: List.head
+  #:- Example: List.head []
   #:  Run:     [List.head, {:: []}]
   #:  Result:  null
   head:
@@ -45,13 +51,13 @@
 
   ###   Extract the rest of the list.
   #
-  #:- Example: List.tail
-  #:  Run: [List.tail, {:: [1, 2, 3]}]
-  #:  Result: [2, 3]
+  #:- Example: List.tail [1, 2, 3]
+  #:  Run:     [List.tail, {:: [1, 2, 3]}]
+  #:  Result:  [2, 3]
   #
-  #:- Example: List.tail
-  #:  Run: [List.tail, {:: []}]
-  #:  Result: []
+  #:- Example: List.tail []
+  #:  Run:     [List.tail, {:: []}]
+  #:  Result:  []
   tail:
     :lambda: [list]
     :do:
@@ -63,7 +69,8 @@
 
 :in:
   :rec:
-    (++): (++)
-    (::): (::)
+    append: append
+    cons: cons
     head: head
     tail: tail
+    singleton: singleton

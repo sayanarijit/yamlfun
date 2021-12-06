@@ -5,6 +5,7 @@ use crate::{Error, Result};
 use indexmap::IndexMap;
 use indexmap::IndexSet;
 use serde::{Deserialize, Serialize};
+use serde_json as json;
 use std::fmt;
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
@@ -45,7 +46,10 @@ impl From<PlatformCall> for Expr {
 
 impl fmt::Display for Expr {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(&yaml::to_string(self).unwrap())
+        match self {
+            Self::Value(v) => v.fmt(f),
+            e => f.write_str(&json::to_string(e).unwrap()),
+        }
     }
 }
 
@@ -549,7 +553,7 @@ impl PlatformCall {
 #[serde(deny_unknown_fields)]
 pub struct Record {
     #[serde(rename = ":rec")]
-    items: IndexMap<String, Expr>,
+    pub(crate) items: IndexMap<String, Expr>,
 }
 
 impl Record {

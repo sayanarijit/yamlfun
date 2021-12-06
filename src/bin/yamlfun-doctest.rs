@@ -46,8 +46,10 @@ fn main() -> Result<()> {
     let tests: Vec<Test> = yaml::from_str(&tests)?;
 
     for (i, test) in tests.into_iter().enumerate() {
-        println!("Test {}:  {}", i + 1, &test.name);
-        println!("  Running: {}", &json::to_string(&test.run)?);
+        println!();
+        println!("Test {}:      {}", i + 1, &test.name);
+        println!();
+        println!("  Running:   {}", &test.run);
         println!("  Expecting: {}", &test.result);
 
         let res = vm.eval(test.run)?;
@@ -55,9 +57,10 @@ fn main() -> Result<()> {
 
         let expect = json::to_value(test.result)?;
 
-        println!("  Got: {}", &res);
-        let status = if res == expect { "SUCCESS" } else { "FAILED" };
-        println!("  Status: {}", status);
+        println!("  Got:       {}", &res);
+        let status = if res == expect { "success" } else { "!!!FAILED!!!" };
+        println!("  Status:    {}", status);
+        println!();
     }
     Ok(())
 }

@@ -24,11 +24,25 @@ impl<P: Platform> Vm<P> {
     {
         let mut state: State = Default::default();
 
+        let basics = include_str!("./Std/Basics.yaml");
+        let basics: Expr = yaml::from_str(basics)?;
+
+        state.set_env("Basics".into(), basics);
+        state.set_env("(+)".into(), Expr::Variable("Basics.(+)".into()));
+        state.set_env("(!)".into(), Expr::Variable("Basics.(!)".into()));
+        state.set_env("(==)".into(), Expr::Variable("Basics.(==)".into()));
+        state.set_env("(!=)".into(), Expr::Variable("Basics.(!=)".into()));
+        state.set_env("(<<)".into(), Expr::Variable("Basics.(<<)".into()));
+        state.set_env("(>>)".into(), Expr::Variable("Basics.(>>)".into()));
+        state.set_env("(&&)".into(), Expr::Variable("Basics.(&&)".into()));
+        state.set_env("(||)".into(), Expr::Variable("Basics.(||)".into()));
+        state.set_env("xor".into(), Expr::Variable("Basics.xor".into()));
+        state.set_env("(++)".into(), Expr::Variable("Basics.(++)".into()));
+        state.set_env("cons".into(), Expr::Variable("Basics.cons".into()));
+
         let list = include_str!("./Std/List.yaml");
         let list: Expr = yaml::from_str(list)?;
         state.set_env("List".into(), list);
-        state.set_env("(++)".into(), Expr::Variable("List.(++)".into()));
-        state.set_env("(::)".into(), Expr::Variable("List.(::)".into()));
 
         platform.init(&mut state)?;
 
