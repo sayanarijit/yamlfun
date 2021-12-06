@@ -2,11 +2,11 @@ use yamlfun::platform::{DefaultPlatform, Platform};
 use yamlfun::{yaml, Error, Expr, Function, Result, Value, Vm};
 
 const PCALL: &str = r#"
-let:
+:let:
   concept:
-    platform: import
-    arg: {:: ./concept.yml}
-in:
+    :platform: import
+    :arg: {:: ./concept.yml}
+:in:
   [concept]
 "#;
 

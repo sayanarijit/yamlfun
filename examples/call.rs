@@ -1,9 +1,9 @@
 use yamlfun::{DefaultPlatform, Expr, Vm, yaml};
 
 const SUM: &str = "
-- lambda: [a, b]
-  do:
-    +: [a, b]
+- :lambda: [a, b]
+  :do:
+    :+: [a, b]
 - :: 10
 - :: 20
 ";

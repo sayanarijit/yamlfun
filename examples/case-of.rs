@@ -1,43 +1,43 @@
 use yamlfun::{yaml, DefaultPlatform, Expr, Vm};
 
 const CASE: &str = r#"
-let:
+:let:
   handle:
-    lambda: [var]
-    do:
-      case: var
-      of:
-        ==:
+    :lambda: [var]
+    :do:
+      :case: var
+      :of:
+        :==:
           1: {:: this is one}
           []: {:: this is empty list}
           bar: {:: this is bar}
-        (): {:: this null}
-        bool: 
-          lambda: [b]
-          do: {:: this is a bool}
-        int:
-          lambda: [n]
-          do: {:: this is an int}
-        float:
-          lambda: [f]
-          do: {:: this is a float}
-        string:
-          lambda: [first, rest]
-          do: first
-        function:
-          lambda: [f]
-          do: {:: this is a function}
-        list:
-          lambda: [head, tail]
-          do: head
-        rec:
-          lambda: [r]
-          do: r.foo
-        _:
-          lambda: [wtf]
-          do: {:: "wtf??"}
-in:
-  list:
+        :(): {:: this null}
+        :bool: 
+          :lambda: [b]
+          :do: {:: this is a bool}
+        :int:
+          :lambda: [n]
+          :do: {:: this is an int}
+        :float:
+          :lambda: [f]
+          :do: {:: this is a float}
+        :string:
+          :lambda: [first, rest]
+          :do: first
+        :function:
+          :lambda: [f]
+          :do: {:: this is a function}
+        :list:
+          :lambda: [head, tail]
+          :do: head
+        :rec:
+          :lambda: [r]
+          :do: r.foo
+        :_:
+          :lambda: [wtf]
+          :do: {:: "wtf??"}
+:in:
+  :list:
     - [handle, {:: null}]
     - [handle, {:: true}]
     - [handle, {:: 1}]

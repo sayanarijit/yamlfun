@@ -1,21 +1,21 @@
 use yamlfun::{yaml, DefaultPlatform, Expr, Value, Vm};
 
 const ONE: &str = r#"
-lambda: []
-do: {:: 1}
+:lambda: []
+:do: {:: 1}
 "#;
 
 const TWO: &str = r#"
-lambda: []
-do:
-  lambda: []
-  do: {:: 2}
+:lambda: []
+:do:
+  :lambda: []
+  :do: {:: 2}
 "#;
 
 const SUM: &str = r#"
-lambda: [arg2, arg1]
-do:
-  +: [arg1, arg2]
+:lambda: [arg2, arg1]
+:do:
+  :+: [arg1, arg2]
 "#;
 
 fn main() {

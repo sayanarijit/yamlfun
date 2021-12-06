@@ -1,18 +1,18 @@
 use yamlfun::{yaml, DefaultPlatform, Expr, Vm};
 
 const WITH: &str = r#"
-let:
+:let:
   args1:
-    rec:
+    :rec:
       first: {:: 10}
       second: {:: 20}
   args2:
     ::
       third: 30
-in:
-  with: [args1, args2]
-  do:
-    +: [first, second, third]
+:in:
+  :with: [args1, args2]
+  :do:
+    :+: [first, second, third]
 "#;
 
 fn main() {

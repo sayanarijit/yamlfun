@@ -1,13 +1,13 @@
 use yamlfun::{yaml, DefaultPlatform, Expr, Vm};
 
 const LIST: &str = r#"
-list:
+:list:
   - {:: a}
   - {:: 1}
   - {:: 1.1}
   - {:: -1}
   - {:: true}
-  - list:
+  - :list:
       - {:: nested}
 "#;
 

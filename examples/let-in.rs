@@ -1,34 +1,34 @@
 use yamlfun::{yaml, DefaultPlatform, Expr, Vm};
 
 const LET_IN: &str = "
-let:
+:let:
   a: {:: foo}
   b: a
-in:
+:in:
   b
 ";
 
 const OVERRIDE: &str = "
-let:
+:let:
   a: {:: foo}
   b:
-    let:
+    :let:
       a: {:: bar}
-    in:
+    :in:
       a
-in:
+:in:
   b
 ";
 
 const RESTORE: &str = "
-let:
+:let:
   a: {:: foo}
   b:
-    let:
+    :let:
       a: {:: bar}
-    in:
+    :in:
       a
-in:
+:in:
   a
 ";
 

@@ -7,72 +7,72 @@ Just an experimental project implementing embedded functional scripting language
 Code:
 
 ```yaml
-let:
+:let:
   (+):
-    lambda: [x, y]
-    do:
-      +: [x, y]
+    :lambda: [x, y]
+    :do:
+      :+: [x, y]
 
   (==):
-    lambda: [x, y]
-    do:
-      ==: [x, y]
+    :lambda: [x, y]
+    :do:
+      :==: [x, y]
 
   Maybe:
-    rec:
+    :rec:
       map:
-        lambda: [callback, val]
-        do:
-          if: [(==), val, { :: null }]
-          then: val
-          else: [callback, val]
+        :lambda: [callback, val]
+        :do:
+          :if: [(==), val, { :: null }]
+          :then: val
+          :else: [callback, val]
 
       withDefault:
-        lambda: [default, val]
-        do:
-          if: [(==), val, { :: null }]
-          then: default
-          else: val
+        :lambda: [default, val]
+        :do:
+          :if: [(==), val, { :: null }]
+          :then: default
+          :else: val
 
   List:
-    rec:
+    :rec:
       head:
-        lambda: [list]
-        do:
-          case: list
-          of:
-            list:
-              lambda: [head, tail]
-              do: head
+        :lambda: [list]
+        :do:
+          :case: list
+          :of:
+            :list:
+              :lambda: [head, tail]
+              :do: head
 
       tail:
-        lambda: [list]
-        do:
-          case: list
-          of:
-            list:
-              lambda: [head, tail]
-              do: tail
+        :lambda: [list]
+        :do:
+          :case: list
+          :of:
+            :list:
+              :lambda: [head, tail]
+              :do: tail
 
   Cons:
-    rec:
+    :rec:
       new:
-        lambda: [a, b, op]
-        do: [op, a, b]
+        :lambda: [a, b, op]
+        :do: [op, a, b]
 
       car:
-        lambda: [cons]
-        do:
+        :lambda: [cons]
+        :do:
           - cons
-          - lambda: [a, b]
-            do: a
+          - :lambda: [a, b]
+            :do: a
 
       cdr:
-        lambda: [cons]
-        do:
+        :lambda: [cons]
+        :do:
           - cons
-          - lambda: [a, b]
-            do: b
+          - :lambda: [a, b]
+            :do: b
 
   cons: [Cons.new, { :: 1 }, { :: 2 }]
   foobar:
@@ -82,14 +82,14 @@ let:
 
   things:
     - (+)
-    - list:
+    - :list:
         - foobar
         - cons
         - Maybe
         - [Cons.car, cons]
     - :: [1, 1.2, -9, null, bar]
-in:
-  rec:
+:in:
+  :rec:
     a: [Maybe.map, [(+), { :: 1 }], { :: 5 }]
     b: [Maybe.map, [(+), { :: 1 }], { :: null }]
     c: [Maybe.withDefault, { :: 0 }, { :: null }]
@@ -99,7 +99,7 @@ in:
         - - [Maybe.map, [(+), { :: 1 }]]
           - { :: 10 }
     e:
-      :>:
+      :|>:
         - { :: 10 }
         - [Maybe.map, [(+), { :: 1 }]]
         - [Maybe.map, [(+), { :: 1 }]]
@@ -109,7 +109,7 @@ in:
     g: [Cons.cdr, cons]
     h: [List.head, things]
     i:
-      :>:
+      :|>:
         - [List.tail, things]
         - List.head
         - Cons.car
@@ -138,9 +138,9 @@ foo
 ### Function
 
 ```yaml
-lambda: [num1, num2]
-do:
-  +: [num1, num2]
+:lambda: [num1, num2]
+:do:
+  :+: [num1, num2]
 ```
 
 ### Function Call
@@ -152,24 +152,18 @@ do:
 ### Chaining
 
 ```yaml
-let:
-  (+):
-    lambda: [x, y]
-    do:
-      +: [x, y]
-in:
-  :>:
-    - { :: 1 }
-    - [(+), { :: 5 }]
-    - [(+), { :: 4 }]
+:|>:
+  - { :: 1 }
+  - [(+), { :: 5 }]
+  - [(+), { :: 4 }]
 ```
 
 ### Record
 
 ```yaml
-rec:
+:rec:
   a:
-    rec:
+    :rec:
       b: { :: { 1: bar, true: baz } }
       '10': { :: foo }
   e: { :: { y: z } }
@@ -186,7 +180,7 @@ foo.a.b.(1)
 ```
 
 ```yaml
-.: [foo, { :: a }, { :: b }, { :: 1 }]
+:.: [foo, { :: a }, { :: b }, { :: 1 }]
 ```
 
 ### Record Field Update
@@ -202,109 +196,109 @@ unset: [e]
 ### List
 
 ```yaml
-list:
+:list:
   - { :: a }
   - { :: 1 }
   - { :: 1.1 }
   - { :: -1 }
   - { :: true }
-  - list:
+  - :list:
       - { :: nested }
 ```
 
 ### If Else
 
 ```yaml
-if:
-  ==: [:: 2, :: 2]
-then: { :: yes }
-else: { :: no }
+:if:
+  :==: [:: 2, :: 2]
+:then: { :: yes }
+:else: { :: no }
 ```
 
 ### Let In
 
 ```yaml
-let:
+:let:
   a: { :: foo }
   b: a
-in: b
+:in: b
 ```
 
 ### With
 
 ```yaml
-let:
+:let:
   args1:
-    rec:
+    :rec:
       first: { :: 10 }
       second: { :: 20 }
   args2:
     ::
       third: 30
-in:
-  with: [args1, args2]
-  do:
-    +: [first, second, third]
+:in:
+  :with: [args1, args2]
+  :do:
+    :+: [first, second, third]
 ```
 
 ### Case Of
 
 ```yaml
-let:
+:let:
   handle:
-    lambda: [var]
-    do:
-      case: var
-      of:
-        ==:
-          1: { :: this is one }
-          []: { :: this is empty list }
-          bar: { :: this is bar }
-        (): { :: this null }
-        bool:
-          lambda: [b]
-          do: { :: this is a bool }
-        int:
-          lambda: [n]
-          do: { :: this is an int }
-        float:
-          lambda: [f]
-          do: { :: this is a float }
-        string:
-          lambda: [first, rest]
-          do: first
-        function:
-          lambda: [f]
-          do: { :: this is a function }
-        list:
-          lambda: [head, tail]
-          do: head
-        rec:
-          lambda: [r]
-          do: r.foo
-        _:
-          lambda: [wtf]
-          do: { :: 'wtf??' }
-in:
-  list:
-    - [handle, { :: null }]
-    - [handle, { :: true }]
-    - [handle, { :: 1 }]
-    - [handle, { :: 2 }]
-    - [handle, { :: 1.1 }]
-    - [handle, { :: foo }]
-    - [handle, { :: bar }]
+    :lambda: [var]
+    :do:
+      :case: var
+      :of:
+        :==:
+          1: {:: this is one}
+          []: {:: this is empty list}
+          bar: {:: this is bar}
+        :(): {:: this null}
+        :bool: 
+          :lambda: [b]
+          :do: {:: this is a bool}
+        :int:
+          :lambda: [n]
+          :do: {:: this is an int}
+        :float:
+          :lambda: [f]
+          :do: {:: this is a float}
+        :string:
+          :lambda: [first, rest]
+          :do: first
+        :function:
+          :lambda: [f]
+          :do: {:: this is a function}
+        :list:
+          :lambda: [head, tail]
+          :do: head
+        :rec:
+          :lambda: [r]
+          :do: r.foo
+        :_:
+          :lambda: [wtf]
+          :do: {:: "wtf??"}
+:in:
+  :list:
+    - [handle, {:: null}]
+    - [handle, {:: true}]
+    - [handle, {:: 1}]
+    - [handle, {:: 2}]
+    - [handle, {:: 1.1}]
+    - [handle, {:: foo}]
+    - [handle, {:: bar}]
     - [handle, handle]
-    - [handle, { :: [] }]
-    - [handle, { :: [a, b] }]
-    - [handle, { :: { foo: bar } }]
+    - [handle, {:: []}]
+    - [handle, {:: [a, b]}]
+    - [handle, {:: {foo: bar}}]
 ```
 
 ### Platform Call
 
 ```yaml
-platform: import
-arg: { :: ./concept.yml }
+:platform: import
+:arg: { :: ./concept.yml }
 ```
 
 ```rust

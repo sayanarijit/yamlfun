@@ -1,13 +1,13 @@
 use yamlfun::{yaml, DefaultPlatform, Expr, Vm};
 
 const TEN: &str = "
-let:
+:let:
   (+):
-    lambda: [x, y]
-    do:
-      +: [x, y]
-in:
-  :>:
+    :lambda: [x, y]
+    :do:
+      :+: [x, y]
+:in:
+  :|>:
     - { :: 1 }
     - [(+), { :: 5 }]
     - [(+), { :: 4 }]

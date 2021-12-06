@@ -440,9 +440,10 @@ impl Expr {
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct Lambda {
+    #[serde(rename = ":lambda")]
     lambda: Vec<String>,
 
-    #[serde(rename = "do")]
+    #[serde(rename = ":do")]
     do_: Expr,
 }
 
@@ -459,42 +460,48 @@ impl Lambda {
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 #[serde(deny_unknown_fields)]
 pub struct With {
+    #[serde(rename = ":with")]
     with: Vec<String>,
 
-    #[serde(rename = "do")]
+    #[serde(rename = ":do")]
     do_: Expr,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 #[serde(deny_unknown_fields)]
 pub struct Get {
-    #[serde(rename = ".")]
+    #[serde(rename = ":.")]
     args: Vec<Expr>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 #[serde(deny_unknown_fields)]
 pub struct Update {
+    #[serde(rename = ":update")]
     update: Expr,
 
     #[serde(default)]
+    #[serde(rename = ":set")]
     set: IndexMap<String, Expr>,
 
     #[serde(default)]
+    #[serde(rename = ":unset")]
     unset: IndexSet<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 #[serde(deny_unknown_fields)]
 pub struct PlatformCall {
+    #[serde(rename = ":platform")]
     platform: String,
+    #[serde(rename = ":arg")]
     arg: Expr,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 #[serde(deny_unknown_fields)]
 pub struct Record {
-    #[serde(rename = "rec")]
+    #[serde(rename = ":rec")]
     items: IndexMap<String, Expr>,
 }
 
@@ -512,90 +519,93 @@ impl Record {
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 #[serde(deny_unknown_fields)]
 pub struct List {
-    #[serde(rename = "list")]
+    #[serde(rename = ":list")]
     items: Vec<Expr>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct LetIn {
-    #[serde(rename = "let")]
+    #[serde(rename = ":let")]
     let_: Env,
 
-    #[serde(rename = "in")]
+    #[serde(rename = ":in")]
     in_: Expr,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct IfElse {
-    #[serde(rename = "if")]
+    #[serde(rename = ":if")]
     if_: Expr,
 
+    #[serde(rename = ":then")]
     then: Expr,
 
-    #[serde(rename = "else")]
+    #[serde(rename = ":else")]
     else_: Expr,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct Sum {
-    #[serde(rename = "+")]
+    #[serde(rename = ":+")]
     args: Vec<Expr>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct Equals {
-    #[serde(rename = "==")]
+    #[serde(rename = ":==")]
     args: Vec<Expr>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct Chain {
-    #[serde(rename = ":>")]
+    #[serde(rename = ":|>")]
     args: Vec<Expr>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct CaseOf {
+    #[serde(rename = ":case")]
     case: Expr,
+    #[serde(rename = ":of")]
     of: Matcher,
 }
 
 #[derive(Default, Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct Matcher {
-    #[serde(default, rename = "==")]
+    #[serde(default, rename = ":==")]
     exact: IndexMap<Yaml, Expr>,
 
-    #[serde(default, rename = "()")]
+    #[serde(default, rename = ":()")]
     unit: Option<Expr>,
 
-    #[serde(default, rename = "bool")]
+    #[serde(default, rename = ":bool")]
     boolean: Option<Lambda>,
 
-    #[serde(default, rename = "int")]
+    #[serde(default, rename = ":int")]
     integer: Option<Lambda>,
 
-    #[serde(default)]
+    #[serde(default, rename = ":float")]
     float: Option<Lambda>,
 
-    #[serde(default)]
+    #[serde(default, rename = ":string")]
     string: Option<Lambda>,
 
-    #[serde(default)]
+    #[serde(default, rename = ":function")]
     function: Option<Lambda>,
 
-    #[serde(default)]
+    #[serde(default, rename = ":list")]
     list: Option<Lambda>,
 
-    #[serde(default)]
+    #[serde(default, rename = ":rec")]
     rec: Option<Lambda>,
 
-    #[serde(default, rename = "_")]
+    #[serde(default, rename = ":_")]
     default: Option<Lambda>,
 }

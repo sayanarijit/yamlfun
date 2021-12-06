@@ -1,9 +1,9 @@
 use yamlfun::{yaml, DefaultPlatform, Expr, Vm};
 
-const YES: &str = "==: [:: 1, :: 1]";
-const NO: &str = "==: [:: 1, :: 2]";
-const FOO: &str = "==: [:: foo, :: foo]";
-const BAR: &str = "==: [:: foo, :: var]";
+const YES: &str = ":==: [:: 1, :: 1]";
+const NO: &str = ":==: [:: 1, :: 2]";
+const FOO: &str = ":==: [:: foo, :: foo]";
+const BAR: &str = ":==: [:: foo, :: var]";
 
 fn main() {
     let vm = Vm::new(DefaultPlatform);

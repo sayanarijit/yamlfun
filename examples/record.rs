@@ -1,34 +1,34 @@
 use yamlfun::{yaml, DefaultPlatform, Expr, Vm};
 
 const REC: &str = r#"
-let:
+:let:
   foo:
-    rec:
+    :rec:
       a:
-        rec:
+        :rec:
           b: {:: {1: bar, true: baz}}
           "10": {:: foo}
       e: {:: {y: z}}
 
   betterFoo:
-    update: foo
-    set:
+    :update: foo
+    :set:
       a: {:: bar}
       oldFoo: foo
-    unset: [e]
+    :unset: [e]
 
-in:
-  rec:
+:in:
+  :rec:
     one:
-      .: [foo, {:: a}, {:: b}, {:: 1}]
+      :.: [foo, {:: a}, {:: b}, {:: 1}]
     (1): foo.a.b.(1)
     (true): foo.a.b.(true)
     y: foo.e.y
     "10": foo.a.10
     f: 
-      lambda: [a, b]
-      do:
-        +: [a, b]
+      :lambda: [a, b]
+      :do:
+        :+: [a, b]
     betterFoo: betterFoo
 "#;
 

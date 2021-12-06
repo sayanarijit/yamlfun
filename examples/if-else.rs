@@ -1,29 +1,29 @@
 use yamlfun::{yaml, Expr, Vm, DefaultPlatform};
 
 const YES: &str = "
-if:
-  ==: [:: 2, :: 2]
-then: {:: yes}
-else: {:: no}
+:if:
+  :==: [:: 2, :: 2]
+:then: {:: yes}
+:else: {:: no}
 ";
 
 const NO: &str = r"
-if:
-  ==: [:: 1, :: 2]
-then: {:: yes}
-else: {:: no}
+:if:
+  :==: [:: 1, :: 2]
+:then: {:: yes}
+:else: {:: no}
 ";
 
 const NESTED: &str = r"
-if:
-  if: {:: true}
-  then: {:: true}
-  else: {:: false}
-then:
-  if: {:: true}
-  then: {:: nested}
-  else: {:: not nested}
-else: {:: not nested at all}
+:if:
+  :if: {:: true}
+  :then: {:: true}
+  :else: {:: false}
+:then:
+  :if: {:: true}
+  :then: {:: nested}
+  :else: {:: not nested}
+:else: {:: not nested at all}
 ";
 
 fn main() {
