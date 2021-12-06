@@ -2,6 +2,9 @@
 
 Just an experimental project implementing embedded functional scripting language based on YAML syntax.
 
+API docs for the standard library: [src/Std](https://github.com/sayanarijit/yamlfun/tree/main/src/Std).
+
+
 ## Concept
 
 Code:
