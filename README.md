@@ -42,7 +42,7 @@ Code:
           :case: list
           :of:
             :list:
-              :lambda: [head, tail]
+              :as: [head, tail]
               :do: head
 
       tail:
@@ -51,7 +51,7 @@ Code:
           :case: list
           :of:
             :list:
-              :lambda: [head, tail]
+              :as: [head, tail]
               :do: tail
 
   Cons:
@@ -256,28 +256,28 @@ foo.a.b.(1)
           bar: {:: this is bar}
         :(): {:: this null}
         :bool: 
-          :lambda: [b]
+          :as: [b]
           :do: {:: this is a bool}
         :int:
-          :lambda: [n]
+          :as: [n]
           :do: {:: this is an int}
         :float:
-          :lambda: [f]
+          :as: [f]
           :do: {:: this is a float}
         :string:
-          :lambda: [first, rest]
+          :as: [first, rest]
           :do: first
         :function:
-          :lambda: [f]
+          :as: [f]
           :do: {:: this is a function}
         :list:
-          :lambda: [head, tail]
+          :as: [head, tail]
           :do: head
         :rec:
-          :lambda: [r]
+          :as: [r]
           :do: r.foo
         :_:
-          :lambda: [wtf]
+          :as: [wtf]
           :do: {:: "wtf??"}
 :in:
   :list:

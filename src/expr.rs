@@ -317,7 +317,7 @@ impl Expr {
                     Value::Bool(b) => {
                         c.of.boolean
                             .map(|l| {
-                                let args = match l.lambda.len() {
+                                let args = match l.as_.len() {
                                     0 => vec![],
                                     1 => vec![Ok(b.clone().into())],
                                     _ => return Err(Error::CaseError(b.clone().into())),
@@ -332,7 +332,7 @@ impl Expr {
                         if n.is_i64() || n.is_u64() {
                             c.of.integer
                                 .map(|l| {
-                                    let args = match l.lambda.len() {
+                                    let args = match l.as_.len() {
                                         0 => vec![],
                                         1 => vec![Ok(n.clone().into())],
                                         _ => return Err(Error::CaseError(n.clone().into())),
@@ -344,7 +344,7 @@ impl Expr {
                         } else {
                             c.of.float
                                 .map(|l| {
-                                    let args = match l.lambda.len() {
+                                    let args = match l.as_.len() {
                                         0 => vec![],
                                         1 => vec![Ok(case.clone().into())],
                                         _ => return Err(Error::CaseError(case.clone().into())),
@@ -360,7 +360,7 @@ impl Expr {
                         .of
                         .string
                         .map(|l| {
-                            let args = match l.lambda.len() {
+                            let args = match l.as_.len() {
                                 0 => vec![],
                                 1 => vec![Ok(s.clone().into())],
                                 2 => {
@@ -377,7 +377,7 @@ impl Expr {
                     Value::List(s) => {
                         c.of.list
                             .map(|l| {
-                                let args = match l.lambda.len() {
+                                let args = match l.as_.len() {
                                     0 => vec![],
                                     1 => vec![Ok(case.clone().into())],
                                     2 => {
@@ -407,7 +407,7 @@ impl Expr {
                     Value::Record(_) => {
                         c.of.rec
                             .map(|l| {
-                                let args = match l.lambda.len() {
+                                let args = match l.as_.len() {
                                     0 => vec![],
                                     1 => vec![Ok(case.clone().into())],
                                     _ => return Err(Error::CaseError(case.clone().into())),
@@ -421,7 +421,7 @@ impl Expr {
                     Value::Function(f) => {
                         c.of.function
                             .map(|l| {
-                                let args = match l.lambda.len() {
+                                let args = match l.as_.len() {
                                     0 => vec![],
                                     1 => vec![Ok(f.clone().into())],
                                     _ => return Err(Error::CaseError(f.clone().into())),
@@ -586,26 +586,46 @@ pub struct Matcher {
     unit: Option<Expr>,
 
     #[serde(default, rename = ":bool")]
-    boolean: Option<Lambda>,
+    boolean: Option<Match>,
 
     #[serde(default, rename = ":int")]
-    integer: Option<Lambda>,
+    integer: Option<Match>,
 
     #[serde(default, rename = ":float")]
-    float: Option<Lambda>,
+    float: Option<Match>,
 
     #[serde(default, rename = ":string")]
-    string: Option<Lambda>,
+    string: Option<Match>,
 
     #[serde(default, rename = ":function")]
-    function: Option<Lambda>,
+    function: Option<Match>,
 
     #[serde(default, rename = ":list")]
-    list: Option<Lambda>,
+    list: Option<Match>,
 
     #[serde(default, rename = ":rec")]
-    rec: Option<Lambda>,
+    rec: Option<Match>,
 
     #[serde(default, rename = ":_")]
-    default: Option<Lambda>,
+    default: Option<Match>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct Match {
+    #[serde(rename = ":as")]
+    as_: Vec<String>,
+
+    #[serde(rename = ":do")]
+    do_: Expr,
+}
+
+impl Match {
+    fn to_function(self, env: Env) -> Function {
+        Function {
+            args: self.as_,
+            env,
+            expr: self.do_,
+        }
+    }
 }

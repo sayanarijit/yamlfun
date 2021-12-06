@@ -33,7 +33,7 @@
           :case: list
           :of:
             :list:
-              :lambda: [head, tail]
+              :as: [head, tail]
               :do: head
 
       tail:
@@ -42,7 +42,7 @@
           :case: list
           :of:
             :list:
-              :lambda: [head, tail]
+              :as: [head, tail]
               :do: tail
 
   Cons:
