@@ -13,12 +13,12 @@ pub struct Function {
 }
 
 impl Function {
-    pub fn new<I>(args: I, expr: Expr) -> Self
+    pub fn new<I>(env: Env, args: I, expr: Expr) -> Self
     where
         I: IntoIterator<Item = String>,
     {
         Self {
-            env: Default::default(),
+            env,
             args: args.into_iter().collect(),
             expr,
         }

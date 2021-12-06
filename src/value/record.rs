@@ -46,7 +46,13 @@ impl Record {
             Yaml::Null => "(null)".into(),
             Yaml::String(s) => {
                 if s.starts_with('(') && s.ends_with(')') {
-                    format!("({})", s)
+                    if let Ok(Yaml::String(_)) =
+                        yaml::from_str(s.strip_prefix('(').unwrap().strip_suffix(')').unwrap())
+                    {
+                        s.into()
+                    } else {
+                        format!("({})", s)
+                    }
                 } else {
                     s.into()
                 }
@@ -59,18 +65,12 @@ impl Record {
     }
 
     pub fn de_field_name(field: &str) -> Result<Yaml> {
-        if field.starts_with("((") && field.ends_with("))") {
-            let y = Self::de_field_name(
-                field
-                    .strip_prefix("((")
-                    .unwrap()
-                    .strip_suffix("))")
-                    .unwrap(),
-            )?;
-            Ok(y)
-        } else if field.starts_with('(') && field.ends_with(')') {
+        if field.starts_with('(') && field.ends_with(')') {
             let y = yaml::from_str(field.strip_prefix('(').unwrap().strip_suffix(')').unwrap())?;
-            Ok(y)
+            match y {
+                Yaml::String(_) => Ok(field.into()),
+                y => Ok(y),
+            }
         } else {
             Ok(Yaml::String(field.into()))
         }

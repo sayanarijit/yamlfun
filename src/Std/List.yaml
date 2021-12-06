@@ -1,0 +1,69 @@
+# You can create a `List` with the `[1,2,3]` syntax, so lists are
+# used all over the place. This module has a bunch of functions to help you work
+# with them!
+
+:let:
+  ### Put two appendable things together. This includes strings and lists.
+  #
+  #:- Example: (++)
+  #:  Run:     [(++), {:: [1, 2]}, {:: [3, 4]}]
+  #:  Result:  [1, 2, 3, 4]
+  (++):
+    :lambda: [list1, list2]
+    :do:
+      :++: [list1, list2]
+
+  ### Add an element to the front of a list.
+  #
+  #:- Example: (::)
+  #:  Run:     [(::), {:: 1}, {:: [2, 3]}]
+  #:  Result:  [1, 2, 3 ]
+  (::):
+    :lambda: [element, list]
+    :do:
+      - (++)
+      - :list: [element]
+      - list
+
+  ###  Extract the first element of a list.
+  #
+  #:- Example: List.head
+  #:  Run:     [List.head, {:: [1, 2, 3]}]
+  #:  Result:  1
+  #
+  #:- Example: List.head
+  #:  Run:     [List.head, {:: []}]
+  #:  Result:  null
+  head:
+    :lambda: [list]
+    :do:
+      :case: list
+      :of:
+        :list:
+          :as: [head, tail]
+          :do: head
+
+  ###   Extract the rest of the list.
+  #
+  #:- Example: List.tail
+  #:  Run: [List.tail, {:: [1, 2, 3]}]
+  #:  Result: [2, 3]
+  #
+  #:- Example: List.tail
+  #:  Run: [List.tail, {:: []}]
+  #:  Result: []
+  tail:
+    :lambda: [list]
+    :do:
+      :case: list
+      :of:
+        :list:
+          :as: [head, tail]
+          :do: tail
+
+:in:
+  :rec:
+    (++): (++)
+    (::): (::)
+    head: head
+    tail: tail

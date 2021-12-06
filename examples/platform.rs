@@ -1,5 +1,5 @@
 use yamlfun::platform::{DefaultPlatform, Platform};
-use yamlfun::{vm, yaml, Error, Expr, Function, Result, Value, Vm};
+use yamlfun::{vm, yaml, Error, Expr, Function, Result, Value, Vm, Env};
 
 const PCALL: &str = r#"
 :lambda: [path]
@@ -19,19 +19,19 @@ impl Platform for MyPlatform {
         Ok(())
     }
 
-    fn call(&self, name: &str, arg: Value) -> Result<Value> {
+    fn call(&self, env: Env, name: &str, arg: Value) -> Result<Value> {
         match name {
             "import" => match arg {
                 Value::String(s) => {
                     let yml = std::fs::read_to_string(s)
                         .map_err(|e| Error::PlatformCallError(e.to_string()))?;
                     let expr: Expr = yaml::from_str(&yml)?;
-                    let func = Function::new([], expr);
+                    let func = Function::new(env, vec![], expr);
                     Ok(Value::Function(func.into()))
                 }
                 v => Err(Error::InvalidArguments(name.into(), vec![v])),
             },
-            _ => self.0.call(name, arg),
+            _ => self.0.call(env, name, arg),
         }
     }
 }

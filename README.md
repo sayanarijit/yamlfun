@@ -13,12 +13,6 @@ Code:
     :do:
       :+: [x, y]
 
-  (++):
-    :lambda: [x, y]
-    :do:
-      :++: [x, y]
-
-
   (==):
     :lambda: [x, y]
     :do:
@@ -39,26 +33,6 @@ Code:
           :if: [(==), val, { :: null }]
           :then: default
           :else: val
-
-  List:
-    :rec:
-      head:
-        :lambda: [list]
-        :do:
-          :case: list
-          :of:
-            :list:
-              :as: [head, tail]
-              :do: head
-
-      tail:
-        :lambda: [list]
-        :do:
-          :case: list
-          :of:
-            :list:
-              :as: [head, tail]
-              :do: tail
 
   Cons:
     :rec:
@@ -257,25 +231,25 @@ foo.a.b.(1)
       :case: var
       :of:
         :==:
-          1: {:: this is one}
-          []: {:: this is empty list}
-          bar: {:: this is bar}
-        :(): {:: this null}
-        :bool: 
+          1: { :: this is one }
+          []: { :: this is empty list }
+          bar: { :: this is bar }
+        :(): { :: this null }
+        :bool:
           :as: [b]
-          :do: {:: this is a bool}
+          :do: { :: this is a bool }
         :int:
           :as: [n]
-          :do: {:: this is an int}
+          :do: { :: this is an int }
         :float:
           :as: [f]
-          :do: {:: this is a float}
+          :do: { :: this is a float }
         :string:
           :as: [first, rest]
           :do: first
         :function:
           :as: [f]
-          :do: {:: this is a function}
+          :do: { :: this is a function }
         :list:
           :as: [head, tail]
           :do: head
@@ -284,20 +258,20 @@ foo.a.b.(1)
           :do: r.foo
         :_:
           :as: [wtf]
-          :do: {:: "wtf??"}
+          :do: { :: 'wtf??' }
 :in:
   :list:
-    - [handle, {:: null}]
-    - [handle, {:: true}]
-    - [handle, {:: 1}]
-    - [handle, {:: 2}]
-    - [handle, {:: 1.1}]
-    - [handle, {:: foo}]
-    - [handle, {:: bar}]
+    - [handle, { :: null }]
+    - [handle, { :: true }]
+    - [handle, { :: 1 }]
+    - [handle, { :: 2 }]
+    - [handle, { :: 1.1 }]
+    - [handle, { :: foo }]
+    - [handle, { :: bar }]
     - [handle, handle]
-    - [handle, {:: []}]
-    - [handle, {:: [a, b]}]
-    - [handle, {:: {foo: bar}}]
+    - [handle, { :: [] }]
+    - [handle, { :: [a, b] }]
+    - [handle, { :: { foo: bar } }]
 ```
 
 ### Platform Call

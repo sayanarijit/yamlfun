@@ -316,7 +316,10 @@ impl Expr {
                 }
             }
 
-            Expr::PlatformCall(p) => platform.call(&p.platform, p.arg.eval(env, platform)?),
+            Expr::PlatformCall(p) => {
+                let env_ = env.clone();
+                platform.call(env, &p.platform, p.arg.eval(env_, platform)?)
+            }
 
             Self::Chain(c) => {
                 if let Some((target, fields)) = c.args.split_first() {

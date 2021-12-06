@@ -13,7 +13,7 @@ pub enum Error {
     #[error("there is no function to call")]
     NoFunction,
 
-    #[error("{0} is nor a function")]
+    #[error("{0} is not a function")]
     NotAFunction(Value),
 
     #[error("{0} is not a boolean")]

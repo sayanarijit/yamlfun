@@ -4,12 +4,6 @@
     :do:
       :+: [x, y]
 
-  (++):
-    :lambda: [x, y]
-    :do:
-      :++: [x, y]
-
-
   (==):
     :lambda: [x, y]
     :do:
@@ -30,26 +24,6 @@
           :if: [(==), val, { :: null }]
           :then: default
           :else: val
-
-  List:
-    :rec:
-      head:
-        :lambda: [list]
-        :do:
-          :case: list
-          :of:
-            :list:
-              :as: [head, tail]
-              :do: head
-
-      tail:
-        :lambda: [list]
-        :do:
-          :case: list
-          :of:
-            :list:
-              :as: [head, tail]
-              :do: tail
 
   Cons:
     :rec:

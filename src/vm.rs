@@ -1,7 +1,7 @@
 use crate::platform::Platform;
-use crate::{Env, Error, Expr, Result, Value};
+use crate::{yaml, Env, Error, Expr, Result, Value};
 
-#[derive(Default)]
+#[derive(Default, Debug, PartialEq)]
 pub struct State {
     env: Env,
 }
@@ -23,6 +23,13 @@ impl<P: Platform> Vm<P> {
         P: Platform,
     {
         let mut state: State = Default::default();
+
+        let list = include_str!("./Std/List.yaml");
+        let list: Expr = yaml::from_str(list)?;
+        state.set_env("List".into(), list);
+        state.set_env("(++)".into(), Expr::Variable("List.(++)".into()));
+        state.set_env("(::)".into(), Expr::Variable("List.(::)".into()));
+
         platform.init(&mut state)?;
 
         Ok(Self { platform, state })

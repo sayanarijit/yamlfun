@@ -1,8 +1,8 @@
-use crate::{vm, Error, Result, Value};
+use crate::{vm, Env, Error, Result, Value};
 
 pub trait Platform: Sized {
     fn init(&self, state: &mut vm::State) -> Result<()>;
-    fn call(&self, name: &str, arg: Value) -> Result<Value>;
+    fn call(&self, env: Env, name: &str, arg: Value) -> Result<Value>;
 }
 
 #[derive(Default, Debug)]
@@ -13,7 +13,7 @@ impl Platform for DefaultPlatform {
         Ok(())
     }
 
-    fn call(&self, name: &str, _: Value) -> Result<Value> {
+    fn call(&self, _env: Env, name: &str, _: Value) -> Result<Value> {
         Err(Error::PlatformCallError(format!(
             "cannot call {} in this platform",
             name
