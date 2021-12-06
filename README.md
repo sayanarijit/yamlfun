@@ -13,21 +13,24 @@ let:
     do:
       +: [x, y]
 
+  (==):
+    lambda: [x, y]
+    do:
+      ==: [x, y]
+
   Maybe:
     rec:
       map:
         lambda: [callback, val]
         do:
-          if:
-            ==: [val, { :: null }]
+          if: [(==), val, { :: null }]
           then: val
           else: [callback, val]
 
       withDefault:
         lambda: [default, val]
         do:
-          if:
-            ==: [val, { :: null }]
+          if: [(==), val, { :: null }]
           then: default
           else: val
 
@@ -54,10 +57,8 @@ let:
   Cons:
     rec:
       new:
-        lambda: [a, b]
-        do:
-          lambda: [op]
-          do: [op, a, b]
+        lambda: [a, b, op]
+        do: [op, a, b]
 
       car:
         lambda: [cons]
