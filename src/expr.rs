@@ -65,13 +65,6 @@ impl Default for Expr {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-#[serde(deny_unknown_fields)]
-pub struct Constant {
-    #[serde(rename = ":")]
-    yaml: Yaml,
-}
-
 impl From<Yaml> for Constant {
     fn from(yaml: Yaml) -> Self {
         Self { yaml }
@@ -480,6 +473,13 @@ impl Expr {
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(deny_unknown_fields)]
+pub struct Constant {
+    #[serde(rename = ":const", alias = ":")]
+    yaml: Yaml,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct Lambda {
     #[serde(rename = ":lambda")]
     args: Vec<String>,
@@ -600,28 +600,28 @@ pub struct IfElse {
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct Sum {
-    #[serde(rename = ":+")]
+    #[serde(rename = ":sum", alias = ":+")]
     args: Vec<Expr>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct Append {
-    #[serde(rename = ":++")]
+    #[serde(rename = ":append", alias = ":++")]
     args: Vec<Expr>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct Equals {
-    #[serde(rename = ":==")]
+    #[serde(rename = ":eq", alias = ":==")]
     args: Vec<Expr>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct Chain {
-    #[serde(rename = ":|>")]
+    #[serde(rename = ":chain", alias = ":|>")]
     args: Vec<Expr>,
 }
 
@@ -637,10 +637,10 @@ pub struct CaseOf {
 #[derive(Default, Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct Matcher {
-    #[serde(default, rename = ":==")]
+    #[serde(default, rename = ":eq", alias = ":==")]
     exact: IndexMap<Yaml, Expr>,
 
-    #[serde(default, rename = ":()")]
+    #[serde(default, rename = ":unit", alias = ":()")]
     unit: Option<Expr>,
 
     #[serde(default, rename = ":bool")]
@@ -664,7 +664,7 @@ pub struct Matcher {
     #[serde(default, rename = ":rec")]
     rec: Option<Match>,
 
-    #[serde(default, rename = ":_")]
+    #[serde(default, rename = ":default", alias = ":_")]
     default: Option<Match>,
 }
 
