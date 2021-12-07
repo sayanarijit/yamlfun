@@ -31,6 +31,10 @@ impl<P: Platform> Vm<P> {
 
         state.set_env("Std".into(), std);
 
+        state.set_env("null_".into(), Expr::Variable("Std.null_".into()));
+        state.set_env("Bool".into(), Expr::Variable("Std.Bool".into()));
+        state.set_env("true_".into(), Expr::Variable("Std.Bool.true_".into()));
+        state.set_env("false_".into(), Expr::Variable("Std.Bool.false_".into()));
         state.set_env("add".into(), Expr::Variable("Std.add".into()));
         state.set_env("List".into(), Expr::Variable("Std.List".into()));
         state.set_env("Maybe".into(), Expr::Variable("Std.Maybe".into()));

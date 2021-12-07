@@ -31,11 +31,6 @@ Code:
 
 ```yaml
 :let:
-  (++):
-    :lambda: [a, b]
-    :do:
-      :++: [a, b]
-
   Cons:
     :rec:
       new:
@@ -57,13 +52,14 @@ Code:
             :do: b
 
   cons: [Cons.new, { :: 1 }, { :: 2 }]
+
   foobar:
-    - (++)
+    - add
     - { :: foo }
     - { :: bar }
 
   things:
-    - (++)
+    - List.append
     - :list:
         - foobar
         - cons
@@ -75,20 +71,20 @@ Code:
     a:
       :|>:
         - [Maybe.just, { :: 10 }]
-        - [Maybe.map, [(+), { :: 1 }]]
-        - [Maybe.map, [(+), { :: 1 }]]
+        - [Maybe.map, [add, { :: 1 }]]
+        - [Maybe.map, [add, { :: 1 }]]
         - [Maybe.withDefault, { :: 0 }]
 
     b: [Cons.car, cons]
     c: [Cons.cdr, cons]
     d:
-      - [Maybe.withDefault, { :: null }]
+      - [Maybe.withDefault, null_]
       - - [List.head, things]
     e:
       :|>:
         - [List.tail, things]
         - List.head
-        - [Maybe.withDefault, { :: null }]
+        - [Maybe.withDefault, null_]
         - Cons.car
 ```
 

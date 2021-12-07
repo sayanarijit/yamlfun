@@ -4,6 +4,13 @@
   #! Some useful functions that get imported by default.
   Basics:
     :rec:
+      #! ## Friendly aliases
+      null_: { :: null }
+      Bool:
+        ::
+          true_: true
+          false_: false
+
       #! ## Math
 
       #! ### add
@@ -438,6 +445,10 @@
 
 :in:
   :rec:
+    null_: Basics.null_
+    Bool: Basics.Bool
+    true_: Basics.Bool.true_
+    false_: Basics.Bool.false_
     add: Basics.add
     (+): Basics.add
     not: Basics.not
