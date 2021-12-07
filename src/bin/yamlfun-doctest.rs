@@ -47,7 +47,7 @@ fn main() -> Result<()> {
 
     for (i, test) in tests.into_iter().enumerate() {
         println!();
-        println!("Test {}:      {}", i + 1, &test.name);
+        println!("Test {}: {}", i + 1, &test.name);
         println!();
         println!("  Running:   {}", &test.run);
         println!("  Expecting: {}", &test.result);
