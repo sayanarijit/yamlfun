@@ -175,42 +175,52 @@
 
   #! A set of helpers to deal with optional data.
   #! For example, `List.head` returns a `Maybe`.
-  #!
-  #: - Example: |
-  #:     Maybe.just 1
-  #:       |> Maybe.map ((+) 2)
-  #:       |> Maybe.map ((+) 1)
-  #:       |> Maybe.withDefault 0
-  #:   Run:
-  #:     :|>:
-  #:       - [Maybe.just, {:: 1}]
-  #:       - [Maybe.map, [(+), {:: 2}]]
-  #:       - [Maybe.map, [(+), {:: 1}]]
-  #:       - [Maybe.withDefault, {:: 0}]
-  #:   Result:  4
-  #!
-  #: - Example: |
-  #:     Maybe.nothing
-  #:       |> Maybe.map ((+) 2)
-  #:       |> Maybe.map ((+) 1)
-  #:       |> Maybe.withDefault 0
-  #:   Run:
-  #:     :|>:
-  #:       - Maybe.nothing
-  #:       - [Maybe.map, [(+), {:: 2}]]
-  #:       - [Maybe.map, [(+), {:: 1}]]
-  #:       - [Maybe.withDefault, {:: 0}]
-  #:   Result:  0
   Maybe:
     :rec:
+      #! ## Maybe.just
+      #!
+      #! The value extsts. Even `null` is a value.
+      #!
+      #: - Example: |
+      #:     Maybe.just 1
+      #:       |> Maybe.map ((+) 2)
+      #:       |> Maybe.map ((+) 1)
+      #:       |> Maybe.withDefault 0
+      #:   Run:
+      #:     :|>:
+      #:       - [Maybe.just, {:: 1}]
+      #:       - [Maybe.map, [(+), {:: 2}]]
+      #:       - [Maybe.map, [(+), {:: 1}]]
+      #:       - [Maybe.withDefault, {:: 0}]
+      #:   Result:  4
+      #!
       just:
         :lambda: [item, mapper, default]
         :do: [mapper, item]
 
+      #! ## Maybe.nothing
+      #!
+      #! No value exists. Not even null.
+      #!
+      #: - Example: |
+      #:     Maybe.nothing
+      #:       |> Maybe.map ((+) 2)
+      #:       |> Maybe.map ((+) 1)
+      #:       |> Maybe.withDefault 0
+      #:   Run:
+      #:     :|>:
+      #:       - Maybe.nothing
+      #:       - [Maybe.map, [(+), {:: 2}]]
+      #:       - [Maybe.map, [(+), {:: 1}]]
+      #:       - [Maybe.withDefault, {:: 0}]
+      #:   Result:  0
       nothing:
         :lambda: [mapper, default]
         :do: default
 
+      #! ## Maybe.map
+      #!
+      #! Chain operation to perform if a value exists.
       map:
         :lambda: [op, maybe, mapper, default]
         :do:
@@ -219,6 +229,35 @@
             :do: [mapper, [op, item]]
           - default
 
+      #! ## Maybe.andThen
+      #!
+      #! Chain together many computations that may fail.
+      #!
+      #: - Example:
+      #:     Maybe.just [1, 2, 3]
+      #:       |> Maybe.andThen List.head
+      #:       |> Maybe.withDefault 0
+      #:   Run:
+      #:     :|>:
+      #:       - [Maybe.just, {:: [1, 2 3]}]
+      #:       - [Maybe.andThen, List.head]
+      #:       - [Maybe.withDefault, {:: 0}]
+      #:   Result: 1
+      andThen:
+        :lambda: [maybeop, maybe, mapper, default]
+        :do:
+          - maybe
+          - :lambda: [item]
+            :do:
+              - [maybeop, item]
+              - :lambda: [item]
+                :do: [mapper, item]
+              - default
+          - default
+
+      #! ## Maybe.withDefault
+      #!
+      #! Default value to return if no value exists.
       withDefault:
         :lambda: [default, maybe]
         :do:

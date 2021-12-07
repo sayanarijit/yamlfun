@@ -63,6 +63,9 @@ impl Serialize for Function {
     where
         S: Serializer,
     {
-        Err(SerdeError::custom("cannot serialize function"))
+        Err(SerdeError::custom(format!(
+            "cannot serialize function {}",
+            Value::Function(self.clone().into())
+        )))
     }
 }
