@@ -2,7 +2,7 @@
 
 Just an experimental project implementing embedded functional scripting language based on YAML syntax.
 
-API docs for the standard library: [src/Std](https://github.com/sayanarijit/yamlfun/tree/main/src/Std).
+API docs for the standard library: [src/Yaml](https://github.com/sayanarijit/yamlfun/tree/main/src/Yaml).
 
 ## Why?
 
@@ -31,36 +31,10 @@ Code:
 
 ```yaml
 :let:
-  (+):
-    :lambda: [x, y]
-    :do:
-      :+: [x, y]
-
   (++):
-    :lambda: [x, y]
+    :lambda: [a, b]
     :do:
-      :++: [x, y]
-
-  (==):
-    :lambda: [x, y]
-    :do:
-      :==: [x, y]
-
-  Maybe:
-    :rec:
-      map:
-        :lambda: [callback, val]
-        :do:
-          :if: [(==), val, { :: null }]
-          :then: val
-          :else: [callback, val]
-
-      withDefault:
-        :lambda: [default, val]
-        :do:
-          :if: [(==), val, { :: null }]
-          :then: default
-          :else: val
+      :++: [a, b]
 
   Cons:
     :rec:
@@ -98,35 +72,30 @@ Code:
     - :: [1, 1.2, -9, null, bar]
 :in:
   :rec:
-    a: [Maybe.map, [(+), { :: 1 }], { :: 5 }]
-    b: [Maybe.map, [(+), { :: 1 }], { :: null }]
-    c: [Maybe.withDefault, { :: 0 }, { :: null }]
-    d:
-      - [Maybe.withDefault, { :: 0 }]
-      - - [Maybe.map, [(+), { :: 1 }]]
-        - - [Maybe.map, [(+), { :: 1 }]]
-          - { :: 10 }
-    e:
+    a:
       :|>:
-        - { :: 10 }
+        - [Maybe.just, { :: 10 }]
         - [Maybe.map, [(+), { :: 1 }]]
         - [Maybe.map, [(+), { :: 1 }]]
         - [Maybe.withDefault, { :: 0 }]
 
-    f: [Cons.car, cons]
-    g: [Cons.cdr, cons]
-    h: [List.head, {:: 0}, things]
-    i:
+    b: [Cons.car, cons]
+    c: [Cons.cdr, cons]
+    d:
+      - [Maybe.withDefault, { :: null }]
+      - - [List.head, things]
+    e:
       :|>:
         - [List.tail, things]
-        - [List.head, {:: 0}]
+        - List.head
+        - [Maybe.withDefault, { :: null }]
         - Cons.car
 ```
 
 Result:
 
 ```
-{a: 6, b: null, c: 0, d: 12, e: 12, f: 1, g: 2, h: ƒ(default), i: ƒ(op)}
+{a: 12, b: 1, c: 2, d: "foobar", e: 1}
 ```
 
 ## Things that (probably) work
@@ -184,7 +153,7 @@ foo.a.10
 ```
 
 ```yaml
-foo.a.b.(1)
+foo.a.b.$1
 ```
 
 ```yaml

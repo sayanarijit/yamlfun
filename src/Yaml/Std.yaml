@@ -1,0 +1,353 @@
+:let:
+  #! # Basics
+  #!
+  #! Some useful functions that get imported by default.
+  Basics:
+    :rec:
+      #! ## Math
+
+      #! ### add
+      #!
+      #! Add two numbers.
+      #!
+      #: - Example: add 1 3.5
+      #:   Run:     [add, {:: 1}, {:: 3.5}]
+      #:   Result:  4.5
+      add:
+        :lambda: [x, y]
+        :do:
+          :+: [x, y]
+
+      #! ## Equality
+
+      #! ### eq
+      #!
+      #! Check if values are the same.
+      #!
+      #: - Example: eq foo foo
+      #:   Run:     [eq, {:: foo}, {:: foo}]
+      #:   Result:  true
+      #!
+      #: - Example: eq 1 1.1
+      #:   Run:     [eq, {:: 1}, {:: 1.1}]
+      #:   Result:  false
+      eq:
+        :lambda: [x, y]
+        :do:
+          :==: [x, y]
+
+      #! ### ne
+      #!
+      #! Check if values are different.
+      #!
+      #: - Example: ne foo foo
+      #:   Run:     [ne, {:: foo}, {:: foo}]
+      #:   Result:  false
+      #!
+      #: - Example: ne false 1
+      #:   Run:     [ne, {:: false}, {:: 1}]
+      #:   Result:  true
+      ne:
+        :lambda: [x, y]
+        :do: [Basics.not, [Basics.eq, x, y]]
+
+      #! ## Booleans
+
+      #! ###  Negate a boolean value.
+      #!
+      #: - Example: not true
+      #:   Run:     [not, {:: true}]
+      #:   Result:  false
+      #!
+      #: - Example: not false
+      #:   Run:     [not, {:: false}]
+      #:   Result:  true
+      not:
+        :lambda: [bool]
+        :do:
+          :if: bool
+          :then: { :: false }
+          :else: { :: true }
+
+      #! ### and
+      #!
+      #! The logical AND operator. `True` if both inputs are `True`.
+      #!
+      #: - Example: and true true
+      #:   Run:     [and, {:: true}, {:: true}]
+      #:   Result:  true
+      #!
+      #: - Example: and true false
+      #:   Run:     [and, {:: true}, {:: false}]
+      #:   Result:  false
+      #!
+      #: - Example: and false true
+      #:   Run:     [and, {:: false}, {:: true}]
+      #:   Result:  false
+      #!
+      #: - Example: and false false
+      #:   Run:     [and, {:: false}, {:: true}]
+      #:   Result:  false
+      and:
+        :lambda: [x, y]
+        :do:
+          :if: x
+          :then: y
+          :else: { :: false }
+
+      #! ### or
+      #!
+      #! The logical OR operator. `True` if any of the inputs is `True`.
+      #!
+      #: - Example: or true true
+      #:   Run:     [or, {:: true}, {:: true}]
+      #:   Result:  true
+      #!
+      #: - Example: or true false
+      #:   Run:     [or, {:: true}, {:: false}]
+      #:   Result:  true
+      #!
+      #: - Example: or false true
+      #:   Run:     [or, {:: false}, {:: true}]
+      #:   Result:  true
+      #!
+      #: - Example: or false false
+      #:   Run:     [or, {:: false}, {:: false}]
+      #:   Result:  false
+      or:
+        :lambda: [x, y]
+        :do:
+          :if: x
+          :then: { :: true }
+          :else: y
+
+      #! ###  The exclusive-or operator. `True` if exactly one input is `True`.
+      #!
+      #: - Example: xor true true
+      #:   Run:     [xor, {:: true}, {:: true}]
+      #:   Result:  false
+      #!
+      #: - Example: xor true false
+      #:   Run:     [xor, {:: true}, {:: false}]
+      #:   Result:  true
+      #!
+      #: - Example: xor false true
+      #:   Run:     [xor, {:: false}, {:: true}]
+      #:   Result:  true
+      #!
+      #: - Example: xor false false
+      #:   Run:     [xor, {:: false}, {:: false}]
+      #:   Result:  false
+      xor:
+        :lambda: [x, y]
+        :do:
+          :if: x
+          :then: [Basics.not, y]
+          :else: y
+
+      #! ### composeL
+      #!
+      #! Function composition, passing results along in the suggested direction.
+      #!
+      #: - Example: "(composeL not (eq 20)) 10"
+      #:   Run:
+      #:     - [composeL, not, [eq, {:: 20}]]
+      #:     - {:: 10}
+      #:   Result:  true
+      composeL:
+        :lambda: [g, f, x]
+        :do: [g, [f, x]]
+
+      #! ### composeR
+      #!
+      #! Function composition, passing results along in the suggested direction.
+      #!
+      #: - Example: "(composeR (eq 20) not) 10"
+      #:   Run:
+      #:     - [composeR, [eq, {:: 20}], not]
+      #:     - {:: 10}
+      #:   Result:  true
+      composeR:
+        :lambda: [f, g, x]
+        :do: [g, [f, x]]
+
+  #! # Maybe
+
+  #! A set of helpers to deal with optional data.
+  #! For example, `List.head` returns a `Maybe`.
+  #!
+  #: - Example: |
+  #:     Maybe.just 1
+  #:       |> Maybe.map ((+) 2)
+  #:       |> Maybe.map ((+) 1)
+  #:       |> Maybe.withDefault 0
+  #:   Run:
+  #:     :|>:
+  #:       - [Maybe.just, {:: 1}]
+  #:       - [Maybe.map, [(+), {:: 2}]]
+  #:       - [Maybe.map, [(+), {:: 1}]]
+  #:       - [Maybe.withDefault, {:: 0}]
+  #:   Result:  4
+  #!
+  #: - Example: |
+  #:     Maybe.nothing
+  #:       |> Maybe.map ((+) 2)
+  #:       |> Maybe.map ((+) 1)
+  #:       |> Maybe.withDefault 0
+  #:   Run:
+  #:     :|>:
+  #:       - Maybe.nothing
+  #:       - [Maybe.map, [(+), {:: 2}]]
+  #:       - [Maybe.map, [(+), {:: 1}]]
+  #:       - [Maybe.withDefault, {:: 0}]
+  #:   Result:  0
+  Maybe:
+    :rec:
+      just:
+        :lambda: [item, mapper, default]
+        :do: [mapper, item]
+
+      nothing:
+        :lambda: [mapper, default]
+        :do: default
+
+      map:
+        :lambda: [op, maybe, mapper, default]
+        :do:
+          - maybe
+          - :lambda: [item]
+            :do: [mapper, [op, item]]
+          - default
+
+      withDefault:
+        :lambda: [default, maybe]
+        :do:
+          - maybe
+          - :lambda: [item]
+            :do: item
+          - default
+
+  #! # List
+  #!
+  #! You can create a `List` with the `list: [a, b, c]` or {:: [1, 2, 3]} syntax,
+  #! so lists are used all over the place. This module has a bunch of functions
+  #! to help you work with them!
+
+  List:
+    :rec:
+      #! ## Create
+
+      #! ### List.Singleton
+      #!
+      #! Create a list with only one element.
+      #!
+      #: - Example: List.singleton 1
+      #:   Run:     [List.singleton, {:: 1}]
+      #:   Result:  [1]
+      #!
+      #: - Example: List.singleton foo
+      #:   Run:     [List.singleton, {:: foo}]
+      #:   Result:  ["foo"]
+      singleton:
+        :lambda: [value]
+        :do:
+          :list: [value]
+
+      #! ### List.new
+      #!
+      #! Add an element to the front of a list.
+      #! A.K.A `cons`, `(::)`
+      #!
+      #: - Example: List.new 1 [2, 3]
+      #:   Run:     [List.new, {:: 1}, {:: [2, 3]}]
+      #:   Result:  [1, 2, 3]
+      new:
+        :lambda: [element, list]
+        :do:
+          - List.append
+          - :list: [element]
+          - list
+
+      #! ## Transform
+
+      #! ### List.append
+      #!
+      #! Put two lists things together.
+      #!
+      #: - Example: List.append [1, 2] [2, 3]
+      #:   Run:     [List.append, {:: [1, 2]}, {:: [3, 4]}]
+      #:   Result:  [1, 2, 3, 4]
+      append:
+        :lambda: [list1, list2]
+        :do:
+          :++: [list1, list2]
+
+      #! ## Deconstruct
+
+      #! ### List.head
+      #!
+      #! Extract the first element of a list.
+      #! If not found, the given default value will be returned.
+      #!
+      #: - Example: Maybe.withDefault 0 (List.head [1, 2, 3])
+      #:   Run:     [Maybe.withDefault, {:: 0}, [List.head, {:: [1, 2, 3]}]]
+      #:   Result:  1
+      #!
+      ##: - Example: Maybe.withDefault 0 (List.head [])
+      ##:   Run:     [Maybe.withDefault, {:: 0}], [head, {:: []}]
+      ##:   Result:  0
+      head:
+        :lambda: [list]
+        :do:
+          :case: list
+          :of:
+            :==:
+              []: Maybe.nothing
+            :list:
+              :as: [head, tail]
+              :do: [Maybe.just, head]
+
+      #! ### List.tail
+      #!
+      #! Extract the rest of the list.
+      #!
+      #: - Example: List.tail [1, 2, 3]
+      #:   Run:     [List.tail, {:: [1, 2, 3]}]
+      #:   Result:  [2, 3]
+      #!
+      #: - Example: List.tail []
+      #:   Run:     [List.tail, {:: []}]
+      #:   Result:  []
+      tail:
+        :lambda: [list]
+        :do:
+          :case: list
+          :of:
+            :==:
+              []: list
+            :list:
+              :as: [head, tail]
+              :do: tail
+
+:in:
+  :rec:
+    add: Basics.add
+    (+): Basics.add
+    not: Basics.not
+    (!): Basics.not
+    eq: Basics.eq
+    (==): Basics.eq
+    ne: Basics.ne
+    (!=): Basics.ne
+    composeL: Basics.composeL
+    (<<): Basics.composeL
+    composeR: Basics.composeR
+    (>>): Basics.composeR
+    and: Basics.and
+    (&&): Basics.and
+    or: Basics.or
+    (||): Basics.or
+    xor: Basics.xor
+    Maybe: Maybe
+    Basics: Basics
+    List: List

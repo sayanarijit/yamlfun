@@ -16,7 +16,7 @@ pub enum Expr {
     Lambda(Box<Lambda>),
     IfElse(Box<IfElse>),
     LetIn(Box<LetIn>),
-    Sum(Sum),
+    Add(Add),
     Append(Append),
     Equals(Equals),
     Constant(Constant),
@@ -167,7 +167,7 @@ impl Expr {
                 }
             }
 
-            Self::Sum(s) => {
+            Self::Add(s) => {
                 let mut args = s.args.into_iter();
                 if let Some(sum) = args.next().map(|a| a.eval(env.clone(), platform)) {
                     let mut sum = sum?;
@@ -176,15 +176,15 @@ impl Expr {
                         match (&sum, &arg) {
                             (Value::Number(n1), Value::Number(n2)) => {
                                 if let Some(s) = n1
-                                    .as_f64()
-                                    .and_then(|i1| n2.as_f64().map(|i2| (i1 + i2).into()))
-                                    .or_else(|| {
-                                        n1.as_u64()
-                                            .and_then(|i1| n2.as_u64().map(|i2| (i1 + i2).into()))
-                                    })
+                                    .as_u64()
+                                    .and_then(|i1| n2.as_u64().map(|i2| (i1 + i2).into()))
                                     .or_else(|| {
                                         n1.as_i64()
                                             .and_then(|i1| n2.as_i64().map(|i2| (i1 + i2).into()))
+                                    })
+                                    .or_else(|| {
+                                        n1.as_f64()
+                                            .and_then(|i1| n2.as_f64().map(|i2| (i1 + i2).into()))
                                     })
                                 {
                                     sum = Value::Number(s);
@@ -557,8 +557,8 @@ pub struct IfElse {
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(deny_unknown_fields)]
-pub struct Sum {
-    #[serde(rename = ":sum", alias = ":+")]
+pub struct Add {
+    #[serde(rename = ":add", alias = ":+")]
     args: Vec<Expr>,
 }
 

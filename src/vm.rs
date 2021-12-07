@@ -24,25 +24,34 @@ impl<P: Platform> Vm<P> {
     {
         let mut state: State = Default::default();
 
-        let basics = include_str!("./Std/Basics.yml");
-        let basics: Expr = yaml::from_str(basics)?;
+        // TODO: figure out how to split the lib.
 
-        state.set_env("Basics".into(), basics);
-        state.set_env("(+)".into(), Expr::Variable("Basics.(+)".into()));
-        state.set_env("(!)".into(), Expr::Variable("Basics.(!)".into()));
-        state.set_env("(==)".into(), Expr::Variable("Basics.(==)".into()));
-        state.set_env("(!=)".into(), Expr::Variable("Basics.(!=)".into()));
-        state.set_env("(<<)".into(), Expr::Variable("Basics.(<<)".into()));
-        state.set_env("(>>)".into(), Expr::Variable("Basics.(>>)".into()));
-        state.set_env("(&&)".into(), Expr::Variable("Basics.(&&)".into()));
-        state.set_env("(||)".into(), Expr::Variable("Basics.(||)".into()));
-        state.set_env("xor".into(), Expr::Variable("Basics.xor".into()));
-        state.set_env("(++)".into(), Expr::Variable("Basics.(++)".into()));
-        state.set_env("cons".into(), Expr::Variable("Basics.cons".into()));
+        let std = include_str!("./Yaml/Std.yaml");
+        let std: Expr = yaml::from_str(std)?;
 
-        let list = include_str!("./Std/List.yml");
-        let list: Expr = yaml::from_str(list)?;
-        state.set_env("List".into(), list);
+        state.set_env("Std".into(), std);
+
+        state.set_env("add".into(), Expr::Variable("Std.add".into()));
+        state.set_env("List".into(), Expr::Variable("Std.List".into()));
+        state.set_env("Maybe".into(), Expr::Variable("Std.Maybe".into()));
+        state.set_env("add".into(), Expr::Variable("Std.add".into()));
+        state.set_env("(+)".into(), Expr::Variable("Std.(+)".into()));
+        state.set_env("not".into(), Expr::Variable("Std.not".into()));
+        state.set_env("(!)".into(), Expr::Variable("Std.(!)".into()));
+        state.set_env("eq".into(), Expr::Variable("Std.(eq)".into()));
+        state.set_env("ne".into(), Expr::Variable("Std.(ne)".into()));
+        state.set_env("!=".into(), Expr::Variable("Std.(!=)".into()));
+        state.set_env("composeL".into(), Expr::Variable("Std.composeL".into()));
+        state.set_env("(<<)".into(), Expr::Variable("Std.(<<)".into()));
+        state.set_env("composeR".into(), Expr::Variable("Std.composeR".into()));
+        state.set_env("(>>)".into(), Expr::Variable("Std.(>>)".into()));
+        state.set_env("and".into(), Expr::Variable("Std.and".into()));
+        state.set_env("(&&)".into(), Expr::Variable("Std.(&&)".into()));
+        state.set_env("or".into(), Expr::Variable("Std.or".into()));
+        state.set_env("(||)".into(), Expr::Variable("Std.(||)".into()));
+        state.set_env("xor".into(), Expr::Variable("Std.xor".into()));
+        state.set_env("Maybe".into(), Expr::Variable("Std.Maybe".into()));
+        state.set_env("List".into(), Expr::Variable("Std.List".into()));
 
         platform.init(&mut state)?;
 

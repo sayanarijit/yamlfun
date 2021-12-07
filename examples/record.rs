@@ -21,8 +21,8 @@ const REC: &str = r#"
   :rec:
     one:
       :get: [foo, {:: a}, {:: b}, {:: 1}]
-    (1): foo.a.b.(1)
-    (true): foo.a.b.(true)
+    $1: foo.a.b.$1
+    $true: foo.a.b.$true
     y: foo.e.y
     "10": foo.a.10
     f: 

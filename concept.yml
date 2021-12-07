@@ -1,34 +1,8 @@
 :let:
-  (+):
-    :lambda: [x, y]
-    :do:
-      :+: [x, y]
-
   (++):
-    :lambda: [x, y]
+    :lambda: [a, b]
     :do:
-      :++: [x, y]
-
-  (==):
-    :lambda: [x, y]
-    :do:
-      :==: [x, y]
-
-  Maybe:
-    :rec:
-      map:
-        :lambda: [callback, val]
-        :do:
-          :if: [(==), val, { :: null }]
-          :then: val
-          :else: [callback, val]
-
-      withDefault:
-        :lambda: [default, val]
-        :do:
-          :if: [(==), val, { :: null }]
-          :then: default
-          :else: val
+      :++: [a, b]
 
   Cons:
     :rec:
@@ -66,26 +40,21 @@
     - :: [1, 1.2, -9, null, bar]
 :in:
   :rec:
-    a: [Maybe.map, [(+), { :: 1 }], { :: 5 }]
-    b: [Maybe.map, [(+), { :: 1 }], { :: null }]
-    c: [Maybe.withDefault, { :: 0 }, { :: null }]
-    d:
-      - [Maybe.withDefault, { :: 0 }]
-      - - [Maybe.map, [(+), { :: 1 }]]
-        - - [Maybe.map, [(+), { :: 1 }]]
-          - { :: 10 }
-    e:
+    a:
       :|>:
-        - { :: 10 }
+        - [Maybe.just, { :: 10 }]
         - [Maybe.map, [(+), { :: 1 }]]
         - [Maybe.map, [(+), { :: 1 }]]
         - [Maybe.withDefault, { :: 0 }]
 
-    f: [Cons.car, cons]
-    g: [Cons.cdr, cons]
-    h: [List.head, {:: 0}, things]
-    i:
+    b: [Cons.car, cons]
+    c: [Cons.cdr, cons]
+    d:
+      - [Maybe.withDefault, { :: null }]
+      - - [List.head, things]
+    e:
       :|>:
         - [List.tail, things]
-        - [List.head, {:: 0}]
+        - List.head
+        - [Maybe.withDefault, { :: null }]
         - Cons.car
