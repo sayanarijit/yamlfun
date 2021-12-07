@@ -38,7 +38,7 @@ fn main() -> Result<()> {
     let tests = code
         .lines()
         .map(|l| l.trim_start())
-        .filter_map(|l| l.strip_prefix("#:"))
+        .filter_map(|l| l.strip_prefix("#: "))
         .map(String::from)
         .collect::<Vec<String>>()
         .join("\n");

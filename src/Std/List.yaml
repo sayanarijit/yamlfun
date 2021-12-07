@@ -1,45 +1,61 @@
-# You can create a `List` with the `[1,2,3]` syntax, so lists are
-# used all over the place. This module has a bunch of functions to help you work
-# with them!
+#! # List
+#!
+#! You can create a `List` with the `[1,2,3]` syntax, so lists are
+#! used all over the place. This module has a bunch of functions to help you work
+#! with them!
 
 :let:
-  ### Put two appendable things together. This includes strings and lists.
-  #
-  #:- Example: append [1, 2] [2, 3]
-  #:  Run:     [append, {:: [1, 2]}, {:: [3, 4]}]
-  #:  Result:  [1, 2, 3, 4]
-  append: (++)
+  #! ## Create
 
-  ### Add an element to the front of a list.
-  #
-  #:- Example: cons 1 [2, 3]
-  #:  Run:     [cons, {:: 1}, {:: [2, 3]}]
-  #:  Result:  [1, 2, 3]
-  cons: Basics.cons
-
-  ### Create a list with only one element.
-  #
-  #:- Example: singleton 1
-  #:  Run:     [singleton, {:: 1}]
-  #:  Result:  [1]
-  #
-  #:- Example: singleton foo
-  #:  Run:     [singleton, {:: foo}]
-  #:  Result:  ["foo"]
+  #! ### Singleton
+  #!
+  #! Create a list with only one element.
+  #!
+  #: - Example: singleton 1
+  #:   Run:     [singleton, {:: 1}]
+  #:   Result:  [1]
+  #!
+  #: - Example: singleton foo
+  #:   Run:     [singleton, {:: foo}]
+  #:   Result:  ["foo"]
   singleton:
     :lambda: [value]
     :do:
       :list: [value]
 
-  ### Extract the first element of a list.
-  #
-  #:- Example: List.head [1, 2, 3]
-  #:  Run:     [List.head, {:: [1, 2, 3]}]
-  #:  Result:  1
-  #
-  #:- Example: List.head []
-  #:  Run:     [List.head, {:: []}]
-  #:  Result:  null
+  #! ### cons
+  #!
+  #! Add an element to the front of a list.
+  #!
+  #: - Example: cons 1 [2, 3]
+  #:   Run:     [cons, {:: 1}, {:: [2, 3]}]
+  #:   Result:  [1, 2, 3]
+  cons: Basics.cons
+
+  #! ## Transform
+
+  #! ### append
+  #!
+  #! Put two appendable things together. This includes strings and lists.
+  #!
+  #: - Example: append [1, 2] [2, 3]
+  #:   Run:     [append, {:: [1, 2]}, {:: [3, 4]}]
+  #:   Result:  [1, 2, 3, 4]
+  append: (++)
+
+  #! ## Deconstruct
+
+  #! ### head
+  #!
+  #! Extract the first element of a list.
+  #!
+  #: - Example: head [1, 2, 3]
+  #:   Run:     [head, {:: [1, 2, 3]}]
+  #:   Result:  1
+  #!
+  #: - Example: head []
+  #:   Run:     [head, {:: []}]
+  #:   Result:  null
   head:
     :lambda: [list]
     :do:
@@ -49,15 +65,17 @@
           :as: [head, tail]
           :do: head
 
-  ###   Extract the rest of the list.
-  #
-  #:- Example: List.tail [1, 2, 3]
-  #:  Run:     [List.tail, {:: [1, 2, 3]}]
-  #:  Result:  [2, 3]
-  #
-  #:- Example: List.tail []
-  #:  Run:     [List.tail, {:: []}]
-  #:  Result:  []
+  #! ### tail
+  #!
+  #! Extract the rest of the list.
+  #!
+  #: - Example: tail [1, 2, 3]
+  #:   Run:     [tail, {:: [1, 2, 3]}]
+  #:   Result:  [2, 3]
+  #!
+  #: - Example: tail []
+  #:   Run:     [tail, {:: []}]
+  #:   Result:  []
   tail:
     :lambda: [list]
     :do:
