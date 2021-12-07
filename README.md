@@ -4,6 +4,27 @@ Just an experimental project implementing embedded functional scripting language
 
 API docs for the standard library: [src/Std](https://github.com/sayanarijit/yamlfun/tree/main/src/Std).
 
+## Why?
+
+Being fully compatible with YAML syntax means that, it will be very easy to
+implement the runtime in a language that can parse YAML, because most of the
+parsing logic will be taken care of by the YAML parser. So, we can expect
+yamlfun code to be runnable in a wide range of platforms.
+
+YAML has a rich ecosystem of tooling. So, if a formatter can format YAML code,
+it can also format yamlfun code.
+
+YAML is widely popular. So, the learning curve of yamlfun syntax will be lower.
+
+The script can be embedded into plain YAML, without losing all the benefits of
+pure YAML code. Which makes it a great alternative configuration language.
+
+YAML syntax is surprisingly good at expressing functional programming
+logic. Anyone familiar with Elm, Haskell, Nix or Lisp should be able to read
+the code without much effort investment.
+
+But most important of all, it's fun.
+
 ## Concept
 
 Code:
