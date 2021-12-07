@@ -45,6 +45,7 @@ fn main() -> Result<()> {
 
     let tests: Vec<Test> = yaml::from_str(&tests)?;
 
+    let mut results = vec![];
     for (i, test) in tests.into_iter().enumerate() {
         println!();
         println!("Test {}: {}", i + 1, &test.name);
@@ -58,9 +59,23 @@ fn main() -> Result<()> {
         let expect = json::to_value(test.result)?;
 
         println!("  Got:       {}", &res);
-        let status = if res == expect { "success" } else { "!!!FAILED!!!" };
+        let status = if res == expect {
+            "success"
+        } else {
+            "!!!FAILED!!!"
+        };
         println!("  Status:    {}", status);
         println!();
+
+        results.push(res == expect);
     }
+
+    let total = results.len();
+    let passed = results.into_iter().filter(|b| *b).count();
+    let failed = total - passed;
+
+    println!("Total:  {}", total);
+    println!("Passed: {}", passed);
+    println!("Failed: {}", failed);
     Ok(())
 }
