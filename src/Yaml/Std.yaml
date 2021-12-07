@@ -266,6 +266,40 @@
             :do: item
           - default
 
+      #! ## Maybe.isJust
+      #!
+      #! It is a value?
+      #!
+      #: - Example: Maybe.isJust (Maybe.just 1)
+      #:   Run:     [Maybe.isJust, [Maybe.just, {:: 1}]]
+      #:   Result:  true
+      #!
+      #: - Example: Maybe.isJust Maybe.nothing
+      #:   Run:     [Maybe.isJust, [Maybe.nothing]]
+      #:   Result:  false
+      isJust:
+        :lambda: [maybe]
+        :do:
+          - maybe
+          - :lambda: [item]
+            :do: { :: true }
+          - { :: false }
+
+      #! ## Maybe.isNothing
+      #!
+      #! It is nothing?
+      #!
+      #: - Example: Maybe.isNothing (Maybe.just 1)
+      #:   Run:     [Maybe.isNothing, [Maybe.just, {:: 1}]]
+      #:   Result:  false
+      #!
+      #: - Example: Maybe.isNothing Maybe.nothing
+      #:   Run:     [Maybe.isNothing, [Maybe.nothing]]
+      #:   Result:  true
+      isNothing:
+        :lambda: [maybe]
+        :do: [Basics.not, [Maybe.isJust, maybe]]
+
   #! # List
   #!
   #! You can create a `List` with the `list: [a, b, c]` or {:: [1, 2, 3]} syntax,
