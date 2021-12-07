@@ -4,7 +4,6 @@ Just an experimental project implementing embedded functional scripting language
 
 API docs for the standard library: [src/Std](https://github.com/sayanarijit/yamlfun/tree/main/src/Std).
 
-
 ## Concept
 
 Code:
@@ -297,4 +296,8 @@ fn main() {
 
 ## Embed into Rust
 
-[Here's how](/examples)
+[Here's how](https://github.com/sayanarijit/yamlfun/tree/main/examples)
+
+## Contribute
+
+See [CONTRIBUTING.md](https://github.com/sayanarijit/yamlfun/tree/main/CONTRIBUTING.md)
