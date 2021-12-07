@@ -315,7 +315,7 @@ impl Expr {
             }
 
             Expr::CaseOf(c) => {
-                let case = c.case.eval(env.clone(), platform)?;
+                let case = c.case.clone().eval(env.clone(), platform)?;
 
                 if let Ok(y) = yaml::to_value(&case) {
                     if let Some(e) = c.of.exact.get(&y).cloned() {
@@ -327,16 +327,20 @@ impl Expr {
                     Value::Number(n) => {
                         if n.is_i64() || n.is_u64() {
                             c.of.integer
+                                .as_ref()
+                                .or_else(|| c.of.default.as_ref())
                                 .map(|l| {
-                                    env.insert(l.as_, case.clone().into());
-                                    l.do_.eval(env, platform)
+                                    env.insert(l.as_.clone(), case.clone().into());
+                                    l.do_.clone().eval(env, platform)
                                 })
                                 .unwrap_or_else(|| Err(Error::CaseError(n.clone().into())))
                         } else {
                             c.of.float
+                                .as_ref()
+                                .or_else(|| c.of.default.as_ref())
                                 .map(|l| {
-                                    env.insert(l.as_, case.clone().into());
-                                    l.do_.eval(env, platform)
+                                    env.insert(l.as_.clone(), case.clone().into());
+                                    l.do_.clone().eval(env, platform)
                                 })
                                 .unwrap_or_else(|| Err(Error::CaseError(n.clone().into())))
                         }
@@ -359,11 +363,12 @@ impl Expr {
 
                     Value::List(ref list) => {
                         c.of.list
+                            .as_ref()
                             .map(|l| {
                                 if let Some(item) = list.first() {
-                                    env.insert(l.as_.0, Expr::Value(item.clone()).into());
+                                    env.insert(l.as_.0.clone(), Expr::Value(item.clone()).into());
                                     env.insert(
-                                        l.as_.1,
+                                        l.as_.1.clone(),
                                         Expr::Value(
                                             list.iter()
                                                 .skip(1)
@@ -372,10 +377,16 @@ impl Expr {
                                                 .into(),
                                         ),
                                     );
-                                    l.do_.eval(env, platform)
+                                    l.do_.clone().eval(env.clone(), platform)
                                 } else {
                                     Err(Error::CaseError(list.clone().into()))
                                 }
+                            })
+                            .or_else(|| {
+                                c.of.default.as_ref().map(|l| {
+                                    env.insert(l.as_.clone(), case.clone().into());
+                                    l.do_.clone().eval(env, platform)
+                                })
                             })
                             .unwrap_or_else(|| Err(Error::CaseError(list.clone().into())))
                     }
@@ -383,8 +394,9 @@ impl Expr {
                     Value::Record(r) => c
                         .of
                         .record
+                        .as_ref()
                         .map(|l| {
-                            for (k, v) in l.as_.into_iter() {
+                            for (k, v) in l.as_.clone().into_iter() {
                                 let f = v.eval(env.clone(), platform)?;
                                 if let Value::String(field) = f {
                                     if let Ok(val) = Value::Record(r.clone()).get_from_yaml_nested(
@@ -398,15 +410,23 @@ impl Expr {
                                     return Err(Error::CaseError(r.clone().into()));
                                 }
                             }
-                            l.do_.eval(env, platform)
+                            l.do_.clone().eval(env.clone(), platform)
+                        })
+                        .or_else(|| {
+                            c.of.default.as_ref().map(|l| {
+                                env.insert(l.as_.clone(), case.clone().into());
+                                l.do_.clone().eval(env, platform)
+                            })
                         })
                         .unwrap_or_else(|| Err(Error::CaseError(r.clone().into()))),
 
                     Value::Function(f) => {
                         c.of.function
+                            .as_ref()
+                            .or_else(|| c.of.default.as_ref())
                             .map(|l| {
-                                env.insert(l.as_, case.clone().into());
-                                l.do_.eval(env, platform)
+                                env.insert(l.as_.clone(), case.clone().into());
+                                l.do_.clone().eval(env, platform)
                             })
                             .unwrap_or_else(|| Err(Error::CaseError(f.clone().into())))
                     }
@@ -614,6 +634,9 @@ pub struct Matcher {
 
     #[serde(default, rename = ":rec")]
     record: Option<AsRec>,
+
+    #[serde(default, rename = ":default", alias = "_")]
+    default: Option<AsItem>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
