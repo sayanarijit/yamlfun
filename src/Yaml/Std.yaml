@@ -413,7 +413,6 @@
   #!
   #! You can create a `Record` with the `rec: {foo: {:: bar}}` or {:: {foo: bar}} syntax,
   #! This module has a bunch of functions to help you work with them!
-
   Rec:
     :rec:
       #! ## Get
@@ -426,12 +425,24 @@
       #:     {foo: {bar: true}}
       #:       |> .foo
       #:       |> .bar
+      #:       |> Maybe.withDefault null
       #:   Run:
       #:     :|>:
       #:       - {:: {foo: {bar: true}}}
       #:       - [Rec.get, {:: foo.bar}]
       #:       - [Maybe.withDefault, {:: null}]
       #:   Result:  true
+      #!
+      #: - Example: |
+      #:     {foo: {bar: true}}
+      #:       |> .bar
+      #:       |> Maybe.withDefault null
+      #:   Run:
+      #:     :|>:
+      #:       - {:: {foo: {bar: true}}}
+      #:       - [Rec.get, {:: bar}]
+      #:       - [Maybe.withDefault, {:: null}]
+      #:   Result:  null
       get:
         :lambda: [field, record]
         :do:
@@ -442,6 +453,9 @@
             :rec:
               :as: { f: field }
               :do: [Maybe.just, f]
+            :_:
+              :as: _
+              :do: Maybe.nothing
 
 :in:
   :rec:

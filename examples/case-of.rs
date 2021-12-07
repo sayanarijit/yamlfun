@@ -11,9 +11,9 @@ const CASE: &str = r#"
           1: {:: this is one}
           []: {:: this is empty list}
           bar: {:: this is bar}
-          null: {:: this null}
-          true: {:: this is a bool}
-          false: {:: this is a bool}
+          null: {:: this is null}
+          true: {:: this is true}
+          false: {:: this is false}
         :int:
           :as: n
           :do: {:: this is an int}
@@ -32,10 +32,14 @@ const CASE: &str = r#"
         :rec:
           :as: {foo_: {:: foo}}
           :do: foo_
+        :_:
+          :as: wtf
+          :do: {:: wtf??}
 :in:
   :list:
     - [handle, {:: null}]
     - [handle, {:: true}]
+    - [handle, {:: false}]
     - [handle, {:: 1}]
     - [handle, {:: 2}]
     - [handle, {:: 1.1}]

@@ -323,24 +323,22 @@ impl Expr {
                     }
                 };
 
-                match &case {
+                if let Ok(v) = match &case {
                     Value::Number(n) => {
                         if n.is_i64() || n.is_u64() {
                             c.of.integer
                                 .as_ref()
-                                .or_else(|| c.of.default.as_ref())
                                 .map(|l| {
                                     env.insert(l.as_.clone(), case.clone().into());
-                                    l.do_.clone().eval(env, platform)
+                                    l.do_.clone().eval(env.clone(), platform)
                                 })
                                 .unwrap_or_else(|| Err(Error::CaseError(n.clone().into())))
                         } else {
                             c.of.float
                                 .as_ref()
-                                .or_else(|| c.of.default.as_ref())
                                 .map(|l| {
                                     env.insert(l.as_.clone(), case.clone().into());
-                                    l.do_.clone().eval(env, platform)
+                                    l.do_.clone().eval(env.clone(), platform)
                                 })
                                 .unwrap_or_else(|| Err(Error::CaseError(n.clone().into())))
                         }
@@ -354,7 +352,7 @@ impl Expr {
                             if let Some(c) = chars.next() {
                                 env.insert(l.as_.0, Expr::Value(c.to_string().into()));
                                 env.insert(l.as_.1, Expr::Value(chars.collect::<String>().into()));
-                                l.do_.eval(env, platform)
+                                l.do_.eval(env.clone(), platform)
                             } else {
                                 Err(Error::CaseError(s.clone().into()))
                             }
@@ -382,13 +380,7 @@ impl Expr {
                                     Err(Error::CaseError(list.clone().into()))
                                 }
                             })
-                            .or_else(|| {
-                                c.of.default.as_ref().map(|l| {
-                                    env.insert(l.as_.clone(), case.clone().into());
-                                    l.do_.clone().eval(env, platform)
-                                })
-                            })
-                            .unwrap_or_else(|| Err(Error::CaseError(list.clone().into())))
+                            .unwrap_or_else(|| Err(Error::CaseError(case.clone().into())))
                     }
 
                     Value::Record(r) => c
@@ -403,30 +395,19 @@ impl Expr {
                                         field.split('.').map(RecordVal::de_field_name),
                                     ) {
                                         env.insert(k, val.clone().into());
-                                    } else {
-                                        return Err(Error::CaseError(r.clone().into()));
                                     }
-                                } else {
-                                    return Err(Error::CaseError(r.clone().into()));
-                                }
+                                };
                             }
                             l.do_.clone().eval(env.clone(), platform)
                         })
-                        .or_else(|| {
-                            c.of.default.as_ref().map(|l| {
-                                env.insert(l.as_.clone(), case.clone().into());
-                                l.do_.clone().eval(env, platform)
-                            })
-                        })
-                        .unwrap_or_else(|| Err(Error::CaseError(r.clone().into()))),
+                        .unwrap_or_else(|| Err(Error::CaseError(case.clone().into()))),
 
                     Value::Function(f) => {
                         c.of.function
                             .as_ref()
-                            .or_else(|| c.of.default.as_ref())
                             .map(|l| {
                                 env.insert(l.as_.clone(), case.clone().into());
-                                l.do_.clone().eval(env, platform)
+                                l.do_.clone().eval(env.clone(), platform)
                             })
                             .unwrap_or_else(|| Err(Error::CaseError(f.clone().into())))
                     }
@@ -438,6 +419,16 @@ impl Expr {
                         // Handled by exact match.
                         Err(Error::CaseError(case.clone().into()))
                     }
+                } {
+                    Ok(v)
+                } else {
+                    c.of.default
+                        .as_ref()
+                        .map(|l| {
+                            env.insert(l.as_.clone(), case.clone().into());
+                            l.do_.clone().eval(env, platform)
+                        })
+                        .unwrap_or_else(|| Err(Error::CaseError(case.clone().into())))
                 }
             }
         }
@@ -635,7 +626,7 @@ pub struct Matcher {
     #[serde(default, rename = ":rec")]
     record: Option<AsRec>,
 
-    #[serde(default, rename = ":default", alias = "_")]
+    #[serde(default, rename = ":default", alias = ":_")]
     default: Option<AsItem>,
 }
 
