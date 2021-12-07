@@ -8,4 +8,4 @@ Steps:
 
 - Add a module in `Std` directory.
 - Include it in the [vm](https://github.com/sayanarijit/yamlfun/tree/main/src/vm.rs).
-- Run doctest `cargo run --bin yamlfun-doctest src/Std/$your-module.yaml`
+- Run doctest `cargo run --bin yamlfun-doctest src/Std/$your-module.yml`

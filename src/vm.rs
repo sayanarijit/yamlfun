@@ -24,7 +24,7 @@ impl<P: Platform> Vm<P> {
     {
         let mut state: State = Default::default();
 
-        let basics = include_str!("./Std/Basics.yaml");
+        let basics = include_str!("./Std/Basics.yml");
         let basics: Expr = yaml::from_str(basics)?;
 
         state.set_env("Basics".into(), basics);
@@ -40,7 +40,7 @@ impl<P: Platform> Vm<P> {
         state.set_env("(++)".into(), Expr::Variable("Basics.(++)".into()));
         state.set_env("cons".into(), Expr::Variable("Basics.cons".into()));
 
-        let list = include_str!("./Std/List.yaml");
+        let list = include_str!("./Std/List.yml");
         let list: Expr = yaml::from_str(list)?;
         state.set_env("List".into(), list);
 
