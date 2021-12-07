@@ -339,54 +339,24 @@ impl Expr {
                     if let Some(e) = c.of.exact.get(&y).cloned() {
                         return e.eval(env, platform);
                     }
-                }
+                };
 
                 match &case {
-                    Value::Null => {
-                        c.of.unit
-                            .map(|u| u.eval(env, platform))
-                            .unwrap_or_else(|| Err(Error::CaseError(case.into())))
-                    }
-
-                    Value::Bool(b) => {
-                        c.of.boolean
-                            .map(|l| {
-                                let args = match l.as_.len() {
-                                    0 => vec![],
-                                    1 => vec![Ok(b.clone().into())],
-                                    _ => return Err(Error::CaseError(b.clone().into())),
-                                };
-                                let func = l.to_function(env);
-                                func.call(args, platform)
-                            })
-                            .unwrap_or_else(|| Err(Error::CaseError(b.clone().into())))
-                    }
-
                     Value::Number(n) => {
                         if n.is_i64() || n.is_u64() {
                             c.of.integer
                                 .map(|l| {
-                                    let args = match l.as_.len() {
-                                        0 => vec![],
-                                        1 => vec![Ok(n.clone().into())],
-                                        _ => return Err(Error::CaseError(n.clone().into())),
-                                    };
-                                    let func = l.to_function(env);
-                                    func.call(args, platform)
+                                    env.insert(l.as_, case.clone().into());
+                                    l.do_.eval(env, platform)
                                 })
                                 .unwrap_or_else(|| Err(Error::CaseError(n.clone().into())))
                         } else {
                             c.of.float
                                 .map(|l| {
-                                    let args = match l.as_.len() {
-                                        0 => vec![],
-                                        1 => vec![Ok(case.clone().into())],
-                                        _ => return Err(Error::CaseError(case.clone().into())),
-                                    };
-                                    let func = l.to_function(env);
-                                    func.call(args, platform)
+                                    env.insert(l.as_, case.clone().into());
+                                    l.do_.eval(env, platform)
                                 })
-                                .unwrap_or_else(|| Err(Error::CaseError(case.clone().into())))
+                                .unwrap_or_else(|| Err(Error::CaseError(n.clone().into())))
                         }
                     }
 
@@ -394,76 +364,64 @@ impl Expr {
                         .of
                         .string
                         .map(|l| {
-                            let args = match l.as_.len() {
-                                0 => vec![],
-                                1 => vec![Ok(s.clone().into())],
-                                2 => {
-                                    let (head, tail) = s.split_at(1);
-                                    vec![Ok(head.to_string().into()), Ok(tail.to_string().into())]
-                                }
-                                _ => return Err(Error::CaseError(s.clone().into())),
-                            };
-                            let func = l.to_function(env);
-                            func.call(args, platform)
+                            let mut chars = s.chars();
+                            if let Some(c) = chars.next() {
+                                env.insert(l.as_.0, Expr::Value(c.to_string().into()));
+                                env.insert(l.as_.1, Expr::Value(chars.collect::<String>().into()));
+                                l.do_.eval(env, platform)
+                            } else {
+                                Err(Error::CaseError(s.clone().into()))
+                            }
                         })
                         .unwrap_or_else(|| Err(Error::CaseError(s.clone().into()))),
 
-                    Value::List(s) => {
+                    Value::List(ref list) => {
                         c.of.list
                             .map(|l| {
-                                let args = match l.as_.len() {
-                                    0 => vec![],
-                                    1 => vec![Ok(case.clone().into())],
-                                    2 => {
-                                        if let Some((head, tail)) = s.split_first() {
-                                            vec![
-                                                Ok(head.clone().into()),
-                                                Ok(Value::List(
-                                                    tail.clone()
-                                                        .into_iter()
-                                                        .map(Clone::clone)
-                                                        .map(Value::from)
-                                                        .into(),
-                                                )),
-                                            ]
-                                        } else {
-                                            vec![Ok(Value::Null), Ok(Value::List(vec![].into()))]
-                                        }
-                                    }
-                                    _ => return Err(Error::CaseError(case.clone().into())),
-                                };
-                                let func = l.to_function(env);
-                                func.call(args, platform)
+                                if let Some(item) = list.first() {
+                                    env.insert(l.as_.0, Expr::Value(item.clone()).into());
+                                    env.insert(
+                                        l.as_.1,
+                                        Expr::Value(
+                                            list.iter()
+                                                .skip(1)
+                                                .map(Clone::clone)
+                                                .collect::<Vec<Value>>()
+                                                .into(),
+                                        ),
+                                    );
+                                    l.do_.eval(env, platform)
+                                } else {
+                                    Err(Error::CaseError(list.clone().into()))
+                                }
                             })
-                            .unwrap_or_else(|| Err(Error::CaseError(case.clone().into())))
+                            .unwrap_or_else(|| Err(Error::CaseError(list.clone().into())))
                     }
 
-                    Value::Record(_) => {
-                        c.of.rec
+                    Value::Record(r) => {
+                        c.of.record
                             .map(|l| {
-                                let args = match l.as_.len() {
-                                    0 => vec![],
-                                    1 => vec![Ok(case.clone().into())],
-                                    _ => return Err(Error::CaseError(case.clone().into())),
-                                };
-                                let func = l.to_function(env);
-                                func.call(args, platform)
+                                env.insert(l.as_, case.clone().into());
+                                l.do_.eval(env, platform)
                             })
-                            .unwrap_or_else(|| Err(Error::CaseError(case.clone().into())))
+                            .unwrap_or_else(|| Err(Error::CaseError(r.clone().into())))
                     }
 
                     Value::Function(f) => {
                         c.of.function
                             .map(|l| {
-                                let args = match l.as_.len() {
-                                    0 => vec![],
-                                    1 => vec![Ok(f.clone().into())],
-                                    _ => return Err(Error::CaseError(f.clone().into())),
-                                };
-                                let func = l.to_function(env);
-                                func.call(args, platform)
+                                env.insert(l.as_, case.clone().into());
+                                l.do_.eval(env, platform)
                             })
                             .unwrap_or_else(|| Err(Error::CaseError(f.clone().into())))
+                    }
+                    Value::Null => {
+                        // Handled by exact match.
+                        Err(Error::CaseError(case.clone().into()))
+                    }
+                    Value::Bool(_) => {
+                        // Handled by exact match.
+                        Err(Error::CaseError(case.clone().into()))
                     }
                 }
             }
@@ -640,50 +598,41 @@ pub struct Matcher {
     #[serde(default, rename = ":eq", alias = ":==")]
     exact: IndexMap<Yaml, Expr>,
 
-    #[serde(default, rename = ":unit", alias = ":()")]
-    unit: Option<Expr>,
-
-    #[serde(default, rename = ":bool")]
-    boolean: Option<Match>,
-
     #[serde(default, rename = ":int")]
-    integer: Option<Match>,
+    integer: Option<AsItem>,
 
     #[serde(default, rename = ":float")]
-    float: Option<Match>,
+    float: Option<AsItem>,
 
     #[serde(default, rename = ":string")]
-    string: Option<Match>,
+    string: Option<AsPair>,
 
     #[serde(default, rename = ":function")]
-    function: Option<Match>,
+    function: Option<AsItem>,
 
     #[serde(default, rename = ":list")]
-    list: Option<Match>,
+    list: Option<AsPair>,
 
     #[serde(default, rename = ":rec")]
-    rec: Option<Match>,
-
-    #[serde(default, rename = ":default", alias = ":_")]
-    default: Option<Match>,
+    record: Option<AsItem>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(deny_unknown_fields)]
-pub struct Match {
+pub struct AsItem {
     #[serde(rename = ":as")]
-    as_: Vec<String>,
+    as_: String,
 
     #[serde(rename = ":do")]
     do_: Expr,
 }
 
-impl Match {
-    fn to_function(self, env: Env) -> Function {
-        Function {
-            args: self.as_,
-            env,
-            expr: self.do_,
-        }
-    }
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct AsPair {
+    #[serde(rename = ":as")]
+    as_: (String, String),
+
+    #[serde(rename = ":do")]
+    do_: Expr,
 }

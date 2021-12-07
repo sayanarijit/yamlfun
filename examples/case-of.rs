@@ -11,31 +11,27 @@ const CASE: &str = r#"
           1: {:: this is one}
           []: {:: this is empty list}
           bar: {:: this is bar}
-        :(): {:: this null}
-        :bool: 
-          :as: [b]
-          :do: {:: this is a bool}
+          null: {:: this null}
+          true: {:: this is a bool}
+          false: {:: this is a bool}
         :int:
-          :as: [n]
+          :as: n
           :do: {:: this is an int}
         :float:
-          :as: [f]
+          :as: f
           :do: {:: this is a float}
         :string:
           :as: [first, rest]
           :do: first
         :function:
-          :as: [f]
+          :as: f
           :do: {:: this is a function}
         :list:
           :as: [head, tail]
           :do: head
         :rec:
-          :as: [r]
+          :as: r
           :do: r.foo
-        :_:
-          :as: [wtf]
-          :do: {:: "wtf??"}
 :in:
   :list:
     - [handle, {:: null}]

@@ -170,32 +170,6 @@
     :lambda: [f, g, x]
     :do: [g, [f, x]]
 
-  #! ### (++)
-  #!
-  #! Put two appendable things together. This includes strings and lists.
-  #!
-  #: - Example: (++) foo bar
-  #:   Run:     [(++), {:: foo}, {:: bar}]
-  #:   Result:  foobar
-  (++):
-    :lambda: [appendable1, appendable2]
-    :do:
-      :++: [appendable1, appendable2]
-
-  #! ### cons
-  #!
-  #! Add an element to the front of a list.
-  #!
-  #: - Example: cons 1 [2, 3]
-  #:   Run:     [cons, {:: 1}, {:: [2, 3]}]
-  #:   Result:  [1, 2, 3]
-  cons:
-    :lambda: [element, list]
-    :do:
-      - (++)
-      - :list: [element]
-      - list
-
 :in:
   :rec:
     (+): (+)
@@ -207,5 +181,3 @@
     (&&): (&&)
     (||): (||)
     xor: xor
-    (++): (++)
-    cons: cons

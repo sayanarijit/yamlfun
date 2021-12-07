@@ -4,6 +4,11 @@
     :do:
       :+: [x, y]
 
+  (++):
+    :lambda: [x, y]
+    :do:
+      :++: [x, y]
+
   (==):
     :lambda: [x, y]
     :do:
@@ -78,9 +83,9 @@
 
     f: [Cons.car, cons]
     g: [Cons.cdr, cons]
-    h: [List.head, things]
+    h: [List.head, {:: 0}, things]
     i:
       :|>:
         - [List.tail, things]
-        - List.head
+        - [List.head, {:: 0}]
         - Cons.car

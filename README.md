@@ -36,6 +36,11 @@ Code:
     :do:
       :+: [x, y]
 
+  (++):
+    :lambda: [x, y]
+    :do:
+      :++: [x, y]
+
   (==):
     :lambda: [x, y]
     :do:
@@ -110,18 +115,18 @@ Code:
 
     f: [Cons.car, cons]
     g: [Cons.cdr, cons]
-    h: [List.head, things]
+    h: [List.head, {:: 0}, things]
     i:
       :|>:
         - [List.tail, things]
-        - List.head
+        - [List.head, {:: 0}]
         - Cons.car
 ```
 
 Result:
 
 ```
-{a: 6, b: null, c: 0, d: 12, e: 12, f: 1, g: 2, h: "foobar", i: 1}
+{a: 6, b: null, c: 0, d: 12, e: 12, f: 1, g: 2, h: ƒ(default), i: ƒ(op)}
 ```
 
 ## Things that (probably) work
@@ -257,31 +262,27 @@ foo.a.b.(1)
           1: { :: this is one }
           []: { :: this is empty list }
           bar: { :: this is bar }
-        :(): { :: this null }
-        :bool:
-          :as: [b]
-          :do: { :: this is a bool }
+          null: { :: this null }
+          true: { :: this is a bool }
+          false: { :: this is a bool }
         :int:
-          :as: [n]
+          :as: n
           :do: { :: this is an int }
         :float:
-          :as: [f]
+          :as: f
           :do: { :: this is a float }
         :string:
           :as: [first, rest]
           :do: first
         :function:
-          :as: [f]
+          :as: f
           :do: { :: this is a function }
         :list:
           :as: [head, tail]
           :do: head
         :rec:
-          :as: [r]
+          :as: r
           :do: r.foo
-        :_:
-          :as: [wtf]
-          :do: { :: 'wtf??' }
 :in:
   :list:
     - [handle, { :: null }]

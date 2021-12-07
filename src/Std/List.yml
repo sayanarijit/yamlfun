@@ -23,14 +23,20 @@
     :do:
       :list: [value]
 
-  #! ### cons
+  #! ### new
   #!
   #! Add an element to the front of a list.
+  #! A.K.A `cons`, `(::)`
   #!
   #: - Example: new 1 [2, 3]
   #:   Run:     [new, {:: 1}, {:: [2, 3]}]
   #:   Result:  [1, 2, 3]
-  new: Basics.cons
+  new:
+    :lambda: [element, list]
+    :do:
+      - append
+      - :list: [element]
+      - list
 
   #! ## Transform
 
@@ -41,26 +47,32 @@
   #: - Example: append [1, 2] [2, 3]
   #:   Run:     [append, {:: [1, 2]}, {:: [3, 4]}]
   #:   Result:  [1, 2, 3, 4]
-  append: Basics.(++)
+  append:
+    :lambda: [list1, list2]
+    :do:
+      :++: [list1, list2]
 
   #! ## Deconstruct
 
   #! ### head
   #!
   #! Extract the first element of a list.
+  #! If not found, the given default value will be returned.
   #!
-  #: - Example: head [1, 2, 3]
-  #:   Run:     [head, {:: [1, 2, 3]}]
+  #: - Example: head 0 [1, 2, 3]
+  #:   Run:     [head, {:: 0}, {:: [1, 2, 3]}]
   #:   Result:  1
   #!
-  #: - Example: head []
-  #:   Run:     [head, {:: []}]
-  #:   Result:  null
+  #: - Example: head 0 []
+  #:   Run:     [head, {:: 0}, {:: []}]
+  #:   Result:  0
   head:
-    :lambda: [list]
+    :lambda: [default, list]
     :do:
       :case: list
       :of:
+        :==:
+          []: default
         :list:
           :as: [head, tail]
           :do: head
@@ -81,6 +93,8 @@
     :do:
       :case: list
       :of:
+        :==:
+          []: list
         :list:
           :as: [head, tail]
           :do: tail
