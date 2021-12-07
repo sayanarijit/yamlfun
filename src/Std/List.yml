@@ -1,8 +1,8 @@
 #! # List
 #!
-#! You can create a `List` with the `[1,2,3]` syntax, so lists are
-#! used all over the place. This module has a bunch of functions to help you work
-#! with them!
+#! You can create a `List` with the `list: [a, b, c]` or {:: [1, 2, 3]} syntax,
+#! so lists are used all over the place. This module has a bunch of functions 
+#! to help you work with them!
 
 :let:
   #! ## Create
