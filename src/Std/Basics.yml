@@ -178,9 +178,9 @@
   #:   Run:     [(++), {:: foo}, {:: bar}]
   #:   Result:  foobar
   (++):
-    :lambda: [list1, list2]
+    :lambda: [appendable1, appendable2]
     :do:
-      :++: [list1, list2]
+      :++: [appendable1, appendable2]
 
   #! ### cons
   #!
