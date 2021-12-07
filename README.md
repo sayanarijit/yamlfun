@@ -156,13 +156,8 @@ foo.a.b.$1
 ```
 
 ```yaml
-:get: [foo, { :: a }, { :: b }, { :: 1 }]
+[Rec.get, { :: a.b.$1 }, foo]
 ```
-
-```yaml
-[Rec.get, { :: a }, foo]
-```
-
 
 ### Record Field Update
 
@@ -185,6 +180,12 @@ foo.a.b.$1
   - { :: true }
   - :list:
       - { :: nested }
+```
+
+List operations
+
+```yaml
+[List.first, list]
 ```
 
 ### If Else

@@ -24,7 +24,6 @@ pub enum Expr {
     List(Box<List>),
     Record(Record),
     With(Box<With>),
-    Get(Get),
     Update(Box<Update>),
     PlatformCall(Box<PlatformCall>),
     Chain(Box<Chain>),
@@ -274,23 +273,6 @@ impl Expr {
                 w.do_.eval(env, platform)
             }
 
-            Self::Get(g) => {
-                if let Some((target, fields)) = g.args.split_first() {
-                    let target = target.clone().eval(env.clone(), platform)?;
-                    let fields_ = fields.into_iter().map(|f| {
-                        let val = f.clone().eval(env.clone(), platform);
-                        match val {
-                            Ok(y) => yaml::to_value(y).map_err(From::from),
-                            Err(e) => Err(e),
-                        }
-                    });
-
-                    target.get_from_yaml_nested(fields_).map(Value::clone)
-                } else {
-                    Err(Error::NotEnoughArguments(".".into(), 2, g.args.len()))
-                }
-            }
-
             Expr::Update(u) => {
                 let rec = u.update.clone().eval(env.clone(), platform)?;
 
@@ -398,14 +380,27 @@ impl Expr {
                             .unwrap_or_else(|| Err(Error::CaseError(list.clone().into())))
                     }
 
-                    Value::Record(r) => {
-                        c.of.record
-                            .map(|l| {
-                                env.insert(l.as_, case.clone().into());
-                                l.do_.eval(env, platform)
-                            })
-                            .unwrap_or_else(|| Err(Error::CaseError(r.clone().into())))
-                    }
+                    Value::Record(r) => c
+                        .of
+                        .record
+                        .map(|l| {
+                            for (k, v) in l.as_.into_iter() {
+                                let f = v.eval(env.clone(), platform)?;
+                                if let Value::String(field) = f {
+                                    if let Ok(val) = Value::Record(r.clone()).get_from_yaml_nested(
+                                        field.split('.').map(RecordVal::de_field_name),
+                                    ) {
+                                        env.insert(k, val.clone().into());
+                                    } else {
+                                        return Err(Error::CaseError(r.clone().into()));
+                                    }
+                                } else {
+                                    return Err(Error::CaseError(r.clone().into()));
+                                }
+                            }
+                            l.do_.eval(env, platform)
+                        })
+                        .unwrap_or_else(|| Err(Error::CaseError(r.clone().into()))),
 
                     Value::Function(f) => {
                         c.of.function
@@ -472,13 +467,6 @@ pub struct With {
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 #[serde(deny_unknown_fields)]
-pub struct Get {
-    #[serde(rename = ":get", alias=":.")]
-    args: Vec<Expr>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
-#[serde(deny_unknown_fields)]
 pub struct Update {
     #[serde(rename = ":update")]
     update: Expr,
@@ -512,6 +500,17 @@ impl PlatformCall {
 pub struct Record {
     #[serde(rename = ":rec")]
     pub(crate) items: IndexMap<String, Expr>,
+}
+
+impl<I> From<I> for Record
+where
+    I: IntoIterator<Item = (String, Expr)>,
+{
+    fn from(items: I) -> Self {
+        Self {
+            items: items.into_iter().collect(),
+        }
+    }
 }
 
 impl Record {
@@ -614,7 +613,7 @@ pub struct Matcher {
     list: Option<AsPair>,
 
     #[serde(default, rename = ":rec")]
-    record: Option<AsItem>,
+    record: Option<AsRec>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
@@ -632,6 +631,16 @@ pub struct AsItem {
 pub struct AsPair {
     #[serde(rename = ":as")]
     as_: (String, String),
+
+    #[serde(rename = ":do")]
+    do_: Expr,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct AsRec {
+    #[serde(rename = ":as")]
+    as_: IndexMap<String, Expr>,
 
     #[serde(rename = ":do")]
     do_: Expr,

@@ -20,7 +20,11 @@ const REC: &str = r#"
 :in:
   :rec:
     one:
-      :get: [foo, {:: a}, {:: b}, {:: 1}]
+      :case: foo
+      :of:
+        :rec:
+          :as: {foo1: {:: a.b.$1}}
+          :do: foo1
     $1: foo.a.b.$1
     $true: foo.a.b.$true
     y: foo.e.y
@@ -30,7 +34,11 @@ const REC: &str = r#"
       :do:
         :+: [a, b]
     betterFoo: betterFoo
-    got: [Rec.get, {:: e}, foo]
+    got:
+      :|>:
+        - foo
+        - [Rec.get, {:: a}]
+        - [Maybe.withDefault, {:: null}]
 "#;
 
 fn main() {

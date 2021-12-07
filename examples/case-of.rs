@@ -30,8 +30,8 @@ const CASE: &str = r#"
           :as: [head, tail]
           :do: head
         :rec:
-          :as: r
-          :do: r.foo
+          :as: {foo_: {:: foo}}
+          :do: foo_
 :in:
   :list:
     - [handle, {:: null}]
