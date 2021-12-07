@@ -473,7 +473,7 @@ pub struct With {
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]
 #[serde(deny_unknown_fields)]
 pub struct Get {
-    #[serde(rename = ":get")]
+    #[serde(rename = ":get", alias=":.")]
     args: Vec<Expr>,
 }
 

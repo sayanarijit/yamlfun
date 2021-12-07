@@ -329,6 +329,34 @@
               :as: [head, tail]
               :do: tail
 
+  #! # Rec
+  #!
+  #! You can create a `Record` with the `rec: {foo: {:: bar}}` or {:: {foo: bar}} syntax,
+  #! This module has a bunch of functions to help you work with them!
+
+  Rec:
+    :rec:
+      #! ## Get
+
+      #! ### Rec.get
+      #!
+      #! Get the value of a field from the given record.
+      #!
+      #: - Example: |
+      #:     {foo: {bar: true}}
+      #:     |> .foo
+      #:     |> .bar
+      #:   Run:
+      #:     :|>:
+      #:       - {:: {foo: {bar: true}}}
+      #:       - [Rec.get, {:: foo}]
+      #:       - [Rec.get, {:: bar}]
+      #:   Result:  true
+      get:
+        :lambda: [field, record]
+        :do:
+          :get: [record, field]
+
 :in:
   :rec:
     add: Basics.add
@@ -351,3 +379,4 @@
     Maybe: Maybe
     Basics: Basics
     List: List
+    Rec: Rec

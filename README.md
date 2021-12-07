@@ -116,8 +116,7 @@ foo
 
 ```yaml
 :lambda: [num1, num2]
-:do:
-  :+: [num1, num2]
+:do: [(+), num1, num2]
 ```
 
 ### Function Call
@@ -159,6 +158,11 @@ foo.a.b.$1
 ```yaml
 :get: [foo, { :: a }, { :: b }, { :: 1 }]
 ```
+
+```yaml
+[Rec.get, { :: a }, foo]
+```
+
 
 ### Record Field Update
 

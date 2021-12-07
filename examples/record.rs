@@ -30,6 +30,7 @@ const REC: &str = r#"
       :do:
         :+: [a, b]
     betterFoo: betterFoo
+    got: [Rec.get, {:: e}, foo]
 "#;
 
 fn main() {

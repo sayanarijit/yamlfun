@@ -13,9 +13,8 @@ const TWO: &str = r#"
 "#;
 
 const SUM: &str = r#"
-:lambda: [arg2, arg1]
-:do:
-  :+: [arg1, arg2]
+:lambda: [num1, num2]
+:do: [(+), num1, num2]
 "#;
 
 fn main() {

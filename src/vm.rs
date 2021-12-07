@@ -52,6 +52,7 @@ impl<P: Platform> Vm<P> {
         state.set_env("xor".into(), Expr::Variable("Std.xor".into()));
         state.set_env("Maybe".into(), Expr::Variable("Std.Maybe".into()));
         state.set_env("List".into(), Expr::Variable("Std.List".into()));
+        state.set_env("Rec".into(), Expr::Variable("Std.Rec".into()));
 
         platform.init(&mut state)?;
 
