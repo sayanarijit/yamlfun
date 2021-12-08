@@ -156,7 +156,7 @@
       #!
       #! Function composition, passing results along in the suggested direction.
       #!
-      #: - Example: "(composeL not (eq 20)) 10"
+      #: - Example: (composeL not (eq 20)) 10
       #:   Run:
       #:     - [composeL, not, [eq, {:: 20}]]
       #:     - {:: 10}
@@ -169,7 +169,7 @@
       #!
       #! Function composition, passing results along in the suggested direction.
       #!
-      #: - Example: "(composeR (eq 20) not) 10"
+      #: - Example: (composeR (eq 20) not) 10
       #:   Run:
       #:     - [composeR, [eq, {:: 20}], not]
       #:     - {:: 10}
@@ -240,7 +240,7 @@
       #!
       #! Chain together many computations that may fail.
       #!
-      #: - Example:
+      #: - Example: |
       #:     Maybe.just [1, 2, 3]
       #:       |> Maybe.andThen List.head
       #:       |> Maybe.withDefault 0

@@ -27,10 +27,15 @@ But most important of all, it's fun.
 
 ## Concept
 
-Code:
+Example:
 
 ```yaml
 :let:
+  (++):
+    :lambda: [a, b]
+    :do:
+      :++: [a, b]
+
   Cons:
     :rec:
       new:
@@ -52,9 +57,8 @@ Code:
             :do: b
 
   cons: [Cons.new, { :: 1 }, { :: 2 }]
-
   foobar:
-    - add
+    - (++)
     - { :: foo }
     - { :: bar }
 
@@ -86,6 +90,12 @@ Code:
         - List.head
         - [Maybe.withDefault, null_]
         - Cons.car
+```
+
+Run:
+
+```
+cargo run --bin yamlfun concept.yml
 ```
 
 Result:
@@ -178,12 +188,6 @@ foo.a.b.$1
       - { :: nested }
 ```
 
-List operations
-
-```yaml
-[List.first, list]
-```
-
 ### If Else
 
 ```yaml
@@ -229,47 +233,47 @@ List operations
       :case: var
       :of:
         :==:
-          1: {:: this is one}
-          []: {:: this is empty list}
-          bar: {:: this is bar}
-          null: {:: this is null}
-          true: {:: this is true}
-          false: {:: this is false}
+          1: { :: this is one }
+          []: { :: this is empty list }
+          bar: { :: this is bar }
+          null: { :: this is null }
+          true: { :: this is true }
+          false: { :: this is false }
         :int:
           :as: n
-          :do: {:: this is an int}
+          :do: { :: this is an int }
         :float:
           :as: f
-          :do: {:: this is a float}
+          :do: { :: this is a float }
         :string:
           :as: [first, rest]
           :do: first
         :function:
           :as: f
-          :do: {:: this is a function}
+          :do: { :: this is a function }
         :list:
           :as: [head, tail]
           :do: head
         :rec:
-          :as: {foo_: {:: foo}}
+          :as: { foo_: { :: foo } }
           :do: foo_
         :_:
           :as: wtf
-          :do: {:: wtf??}
+          :do: { :: wtf?? }
 :in:
   :list:
-    - [handle, {:: null}]
-    - [handle, {:: true}]
-    - [handle, {:: false}]
-    - [handle, {:: 1}]
-    - [handle, {:: 2}]
-    - [handle, {:: 1.1}]
-    - [handle, {:: foo}]
-    - [handle, {:: bar}]
+    - [handle, { :: null }]
+    - [handle, { :: true }]
+    - [handle, { :: false }]
+    - [handle, { :: 1 }]
+    - [handle, { :: 2 }]
+    - [handle, { :: 1.1 }]
+    - [handle, { :: foo }]
+    - [handle, { :: bar }]
     - [handle, handle]
-    - [handle, {:: []}]
-    - [handle, {:: [a, b]}]
-    - [handle, {:: {foo: bar}}]
+    - [handle, { :: [] }]
+    - [handle, { :: [a, b] }]
+    - [handle, { :: { foo: bar } }]
 ```
 
 ### Platform Call
